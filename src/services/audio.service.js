@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const FormData = require('form-data');
 const { CONFIG } = require('../config');
 const { createTimeout } = require('../utils/helpers');
 
@@ -11,19 +12,22 @@ async function analyzeAudio(filePath, mimeType, students = []) {
 
   const { signal, clear } = createTimeout(120_000);
   try {
-    const audioBuffer = fs.readFileSync(filePath);
     const ext = path.extname(filePath) || '.webm';
 
-    const formData = new FormData();
-    formData.append('audio', new Blob([audioBuffer], { type: mimeType }), `audio${ext}`);
+    const form = new FormData();
+    form.append('audio', fs.createReadStream(filePath), {
+      filename: `audio${ext}`,
+      contentType: mimeType || 'audio/mpeg',
+    });
 
     if (students && Array.isArray(students) && students.length > 0) {
-      formData.append('dataset', JSON.stringify(students));
+      form.append('dataset', JSON.stringify(students));
     }
 
     const response = await fetch(apiUrl, {
       method: 'POST',
-      body: formData,
+      headers: form.getHeaders(),
+      body: form,
       signal,
     });
 
