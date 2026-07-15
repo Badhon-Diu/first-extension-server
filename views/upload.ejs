@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="theme-color" content="#22c55e">
+  <title>DIU IntelliMarks — Upload</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green:      #22c55e;
+      --green-d:    #16a34a;
+      --green-dd:   #15803d;
+      --green-l:    #dcfce7;
+      --green-xl:   #f0fdf4;
+      --red:        #ef4444;
+      --red-d:      #dc2626;
+      --red-l:      #fef2f2;
+      --amber:      #f59e0b;
+      --amber-l:    #fffbeb;
+      --bg:         #f8fafc;
+      --card:       #ffffff;
+      --border:     #e5e7eb;
+      --border-d:   #d1d5db;
+      --text:       #111827;
+      --text-2:     #374151;
+      --muted:      #6b7280;
+      --muted-l:    #9ca3af;
+      --r-sm: 8px;
+      --r:    12px;
+      --r-lg: 16px;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,.04), 0 1px 3px rgba(0,0,0,.06);
+      --shadow:    0 4px 6px -1px rgba(0,0,0,.06), 0 2px 4px -2px rgba(0,0,0,.05);
+      --shadow-lg: 0 10px 25px -5px rgba(0,0,0,.08), 0 8px 10px -6px rgba(0,0,0,.05);
+      --shadow-green: 0 4px 14px rgba(34,197,94,.3);
+    }
+
+    html, body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* ── Header ── */
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(255,255,255,.85);
+      backdrop-filter: saturate(180%) blur(12px);
+      -webkit-backdrop-filter: saturate(180%) blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, rgb(213, 215, 225));
+      border-radius: 11px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px ;
+    }
+    .header-text h1 {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+      color: var(--text);
+    }
+    .header-text p {
+      font-size: 11px;
+      color: var(--muted);
+      font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+      margin-top: 2px;
+      letter-spacing: 0.02em;
+    }
+
+    /* ── Container ── */
+    .container {
+      padding: 20px 16px 48px;
+      max-width: 540px;
+      margin: 0 auto;
+    }
+
+    /* ── Step indicator ── */
+    .steps {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 18px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .step {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 600;
+    }
+    .step-num {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      background: var(--border);
+      color: var(--muted);
+      font-size: 11px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700;
+      transition: all .25s ease;
+    }
+    .step.active .step-num {
+      background: var(--green);
+      color: #fff;
+    }
+    .step.active { color: var(--text); }
+    .step.done .step-num {
+      background: var(--green);
+      color: #fff;
+    }
+    .step-divider {
+      flex: 1;
+      height: 2px;
+      background: var(--border);
+      border-radius: 1px;
+    }
+
+    /* ── Instruction ── */
+    .hint-box {
+      background: var(--green-xl);
+      border: 1px solid var(--green-l);
+      border-radius: var(--r);
+      padding: 14px 16px;
+      font-size: 13px;
+      color: var(--text-2);
+      line-height: 1.55;
+      margin-bottom: 18px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+    .hint-box .hint-icon {
+      flex-shrink: 0;
+      width: 20px; height: 20px;
+      background: var(--green);
+      color: #fff;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      margin-top: 1px;
+    }
+    .hint-box strong { color: var(--green-dd); }
+
+    /* ── Upload zone (drag & drop) ── */
+    .upload-zone {
+      background: var(--card);
+      border: 2px dashed var(--border-d);
+      border-radius: var(--r-lg);
+      padding: 32px 20px;
+      text-align: center;
+      transition: all .2s ease;
+      cursor: pointer;
+      margin-bottom: 16px;
+      position: relative;
+    }
+    .upload-zone:hover {
+      border-color: var(--green);
+      background: var(--green-xl);
+    }
+    .upload-zone.dragover {
+      border-color: var(--green);
+      background: var(--green-l);
+      transform: scale(1.01);
+    }
+    .upload-zone .uz-icon {
+      width: 56px; height: 56px;
+      margin: 0 auto 12px;
+      background: var(--green-xl);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px;
+      transition: all .2s ease;
+    }
+    .upload-zone:hover .uz-icon {
+      background: var(--green-l);
+      transform: scale(1.05);
+    }
+    .upload-zone .uz-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .upload-zone .uz-sub {
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    /* ── Action buttons ── */
+    .action-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .action-btn {
+      background: var(--card);
+      border: 1.5px solid var(--border);
+      border-radius: var(--r);
+      padding: 16px 12px;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      transition: all .15s ease;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .action-btn:hover {
+      border-color: var(--green);
+      background: var(--green-xl);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-sm);
+    }
+    .action-btn:active { transform: scale(.97); }
+    .action-btn .icon-wrap {
+      width: 40px; height: 40px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      transition: all .15s ease;
+    }
+    .action-btn.camera-btn .icon-wrap { background: var(--green-l); }
+    .action-btn.gallery-btn .icon-wrap { background: #f3f4f6; }
+    .action-btn .label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-2);
+    }
+    .action-btn:focus-visible {
+      outline: 2px solid var(--green);
+      outline-offset: 2px;
+    }
+
+    /* ── Image grid ── */
+    .grid-section { animation: fadeIn .25s ease; }
+    .grid-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .grid-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .grid-badge {
+      background: var(--green-l);
+      color: var(--green-dd);
+      font-size: 12px;
+      font-weight: 700;
+      padding: 2px 9px;
+      border-radius: 20px;
+      min-width: 22px;
+      text-align: center;
+    }
+    .clear-btn {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--red);
+      padding: 6px 10px;
+      border-radius: 6px;
+      transition: background .15s;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .clear-btn:hover { background: var(--red-l); }
+
+    .image-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    .grid-item {
+      position: relative;
+      aspect-ratio: 1;
+      border-radius: var(--r-sm);
+      overflow: hidden;
+      background: var(--border);
+      box-shadow: var(--shadow-sm);
+      animation: itemIn .2s ease;
+    }
+    @keyframes itemIn {
+      from { opacity: 0; transform: scale(.9); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+    .grid-item img {
+      width: 100%; height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .grid-item .num-badge {
+      position: absolute;
+      bottom: 4px; left: 4px;
+      background: rgba(0,0,0,.6);
+      color: #fff;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 10px;
+      backdrop-filter: blur(4px);
+    }
+    .remove-img {
+      position: absolute;
+      top: 4px; right: 4px;
+      width: 24px; height: 24px;
+      background: rgba(0,0,0,.55);
+      border: none;
+      border-radius: 50%;
+      color: #fff;
+      font-size: 13px;
+      line-height: 1;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .15s;
+      backdrop-filter: blur(4px);
+    }
+    .remove-img:hover {
+      background: var(--red);
+      transform: scale(1.1);
+    }
+
+    /* ── Submit button ── */
+    .submit-btn {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: #fff;
+      border: none;
+      border-radius: var(--r);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: var(--shadow-green);
+      transition: all .15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      letter-spacing: 0.01em;
+    }
+    .submit-btn:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+      box-shadow: none;
+      background: var(--muted-l);
+    }
+    .submit-btn:not(:disabled):hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(34,197,94,.4);
+    }
+    .submit-btn:not(:disabled):active { transform: scale(.98); }
+
+    /* ── Progress bar ── */
+    .progress-wrap {
+      width: 100%;
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      margin-top: 14px;
+      overflow: hidden;
+      display: none;
+    }
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #22c55e, #16a34a);
+      border-radius: 3px;
+      width: 0%;
+      transition: width .3s ease;
+      position: relative;
+    }
+    .progress-bar::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.4), transparent);
+      animation: shimmer 1.4s infinite;
+    }
+    @keyframes shimmer {
+      0%   { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+    /* ── Status messages ── */
+    .status {
+      margin-top: 14px;
+      padding: 13px 16px;
+      border-radius: var(--r);
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.5;
+      display: none;
+      animation: fadeIn .2s ease;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .status.show { display: flex; }
+    .status.success {
+      background: var(--green-l);
+      border: 1px solid #bbf7d0;
+      color: var(--green-dd);
+    }
+    .status.error {
+      background: var(--red-l);
+      border: 1px solid #fecaca;
+      color: var(--red-d);
+    }
+    .status.info {
+      background: #eff6ff;
+      border: 1px solid #bfdbfe;
+      color: #1e40af;
+    }
+    .status .s-icon {
+      flex-shrink: 0;
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+      margin-top: 1px;
+    }
+    .status.success .s-icon { background: var(--green); }
+    .status.error .s-icon   { background: var(--red); }
+    .status.info .s-icon    { background: #3b82f6; }
+
+    /* ── Upload summary card ── */
+    .summary-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 28px 20px;
+      margin-top: 16px;
+      text-align: center;
+      display: none;
+      box-shadow: var(--shadow);
+      animation: fadeIn .3s ease;
+    }
+    .summary-card.show { display: block; }
+    .summary-card .check-circle {
+      width: 64px; height: 64px;
+      margin: 0 auto 14px;
+      background: var(--green-l);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px;
+      animation: popIn .4s cubic-bezier(.68,-0.55,.265,1.55);
+    }
+    @keyframes popIn {
+      0%   { transform: scale(0); }
+      60%  { transform: scale(1.15); }
+      100% { transform: scale(1); }
+    }
+    .summary-card .big-num {
+      font-size: 44px;
+      font-weight: 800;
+      color: var(--green-dd);
+      line-height: 1;
+      margin-bottom: 6px;
+      letter-spacing: -0.02em;
+    }
+    .summary-card .sub-text {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .summary-card .next-step {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 8px;
+      padding: 10px 14px;
+      background: var(--bg);
+      border-radius: var(--r-sm);
+      line-height: 1.5;
+    }
+    .summary-card .next-step strong { color: var(--text-2); }
+    .summary-card .add-more {
+      margin-top: 16px;
+      background: var(--card);
+      border: 1.5px solid var(--green);
+      border-radius: var(--r);
+      padding: 13px 20px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--green-d);
+      cursor: pointer;
+      transition: all .15s;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+    .summary-card .add-more:hover {
+      background: var(--green);
+      color: #fff;
+    }
+
+    /* ── Footer note ── */
+    .footer-note {
+      text-align: center;
+      margin-top: 28px;
+      font-size: 11px;
+      color: var(--muted-l);
+      line-height: 1.6;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* spinner inside button */
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .btn-spinner {
+      width: 16px; height: 16px;
+      border: 2.5px solid rgba(255,255,255,.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      flex-shrink: 0;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 380px) {
+      .image-grid { grid-template-columns: repeat(2, 1fr); }
+      .container { padding: 16px 14px 40px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo">
+     <img src="./../exicon.svg" alt="DIU IntelliMarks Logo" class="logo-svg">
+    </div>
+  <div class="header-text">
+    <h1>DIU IntelliMarks</h1>
+    <p>Session: <%= uuid %></p>
+  </div>
+</div>
+
+<div class="container">
+
+  <!-- Step indicator -->
+  <div class="steps">
+    <div class="step active" id="step1">
+      <span class="step-num">1</span>
+      <span>Add Photos</span>
+    </div>
+    <div class="step-divider"></div>
+    <div class="step" id="step2">
+      <span class="step-num">2</span>
+      <span>Submit</span>
+    </div>
+    <div class="step-divider"></div>
+    <div class="step" id="step3">
+      <span class="step-num">3</span>
+      <span>Process</span>
+    </div>
+  </div>
+
+  <!-- Hint -->
+  <div class="hint-box">
+    <div class="hint-icon">i</div>
+    <div>
+      Capture or pick mark sheet photos, then tap <strong>Submit</strong> to send them to the desktop extension. You can add more anytime.
+    </div>
+  </div>
+
+  <!-- Upload zone (drag & drop) -->
+  <div class="upload-zone" id="uploadZone">
+    <div class="uz-icon">📁</div>
+    <div class="uz-title">Drop images here</div>
+    <div class="uz-sub">or use the buttons below</div>
+  </div>
+
+  <!-- Action buttons -->
+  <div class="action-row">
+    <button class="action-btn camera-btn" id="cameraBtn" type="button">
+      <span class="icon-wrap">📷</span>
+      <span class="label">Take Photo</span>
+    </button>
+    <button class="action-btn gallery-btn" id="galleryBtn" type="button">
+      <span class="icon-wrap">🖼️</span>
+      <span class="label">From Gallery</span>
+    </button>
+  </div>
+
+  <!-- Hidden inputs -->
+  <input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none">
+  <input type="file" id="galleryInput" accept="image/*" multiple style="display:none">
+
+  <!-- Image grid -->
+  <div class="grid-section" id="gridSection" style="display:none">
+    <div class="grid-header">
+      <div class="grid-title">
+        Selected
+        <span class="grid-badge" id="gridCount">0</span>
+      </div>
+      <button class="clear-btn" id="clearAllBtn" type="button">
+        <span>✕</span> Clear all
+      </button>
+    </div>
+    <div class="image-grid" id="imageGrid"></div>
+  </div>
+
+  <!-- Submit -->
+  <button class="submit-btn" id="submitBtn" disabled type="button">
+    Submit Photos
+  </button>
+
+  <!-- Progress -->
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+
+  <!-- Status -->
+  <div class="status" id="statusMsg"></div>
+
+  <!-- Upload summary -->
+  <div class="summary-card" id="summaryCard">
+    <div class="check-circle">✓</div>
+    <div class="big-num" id="totalCount">0</div>
+    <div class="sub-text">images uploaded to the extension</div>
+    <div class="next-step">
+      You can now refresh the count in the extension and click <strong>Process</strong> to continue.
+    </div>
+    <button class="add-more" id="addMoreBtn" type="button">+ Add more photos</button>
+  </div>
+
+  <!-- Footer -->
+  <div class="footer-note">
+    DIU IntelliMarks · Secure session transfer<br>
+    Your photos are processed locally on the desktop.
+  </div>
+
+</div>
+
+<script>
+  'use strict';
+
+  const UUID       = '<%= uuid %>';
+  const UPLOAD_URL = `/upload/${UUID}/images`;
+
+  let pending       = [];   // {file, preview} — not yet submitted
+  let totalUploaded = 0;
+  let isUploading   = false;
+
+  // ── DOM refs ────────────────────────────────────────────────────────────────
+  const cameraBtn    = document.getElementById('cameraBtn');
+  const galleryBtn   = document.getElementById('galleryBtn');
+  const cameraInput  = document.getElementById('cameraInput');
+  const galleryInput = document.getElementById('galleryInput');
+  const uploadZone   = document.getElementById('uploadZone');
+  const gridSection  = document.getElementById('gridSection');
+  const imageGrid    = document.getElementById('imageGrid');
+  const gridCount    = document.getElementById('gridCount');
+  const clearAllBtn  = document.getElementById('clearAllBtn');
+  const submitBtn    = document.getElementById('submitBtn');
+  const progressWrap = document.getElementById('progressWrap');
+  const progressBar  = document.getElementById('progressBar');
+  const statusMsg    = document.getElementById('statusMsg');
+  const summaryCard  = document.getElementById('summaryCard');
+  const totalCountEl = document.getElementById('totalCount');
+  const addMoreBtn   = document.getElementById('addMoreBtn');
+  const step1        = document.getElementById('step1');
+  const step2        = document.getElementById('step2');
+  const step3        = document.getElementById('step3');
+
+  // ── Events ──────────────────────────────────────────────────────────────────
+  cameraBtn.addEventListener('click',  () => cameraInput.click());
+  galleryBtn.addEventListener('click', () => galleryInput.click());
+  cameraInput.addEventListener('change',  e => { handleFiles(e.target.files); resetInput(cameraInput); });
+  galleryInput.addEventListener('change', e => { handleFiles(e.target.files); resetInput(galleryInput); });
+  clearAllBtn.addEventListener('click', clearAll);
+  submitBtn.addEventListener('click',   uploadAll);
+  addMoreBtn.addEventListener('click',  showUploadUI);
+
+  // Upload zone click → open gallery
+  uploadZone.addEventListener('click', () => galleryInput.click());
+
+  // Drag & drop
+  ['dragenter', 'dragover'].forEach(evt => {
+    uploadZone.addEventListener(evt, e => {
+      e.preventDefault();
+      e.stopPropagation();
+      uploadZone.classList.add('dragover');
+    });
+  });
+  ['dragleave', 'drop'].forEach(evt => {
+    uploadZone.addEventListener(evt, e => {
+      e.preventDefault();
+      e.stopPropagation();
+      uploadZone.classList.remove('dragover');
+    });
+  });
+  uploadZone.addEventListener('drop', e => {
+    const files = e.dataTransfer && e.dataTransfer.files;
+    if (files && files.length) handleFiles(files);
+  });
+
+  // ── Helpers ──────────────────────────────────────────────────────────────────
+  function resetInput(input) { input.value = ''; }
+
+  function updateSteps() {
+    if (isUploading) {
+      step1.classList.add('done'); step1.classList.remove('active');
+      step2.classList.add('active');
+      return;
+    }
+    if (totalUploaded > 0 && pending.length === 0 && summaryCard.style.display !== 'none') {
+      step1.classList.add('done'); step1.classList.remove('active');
+      step2.classList.add('done'); step2.classList.remove('active');
+      step3.classList.add('active');
+    } else if (pending.length > 0) {
+      step1.classList.add('done'); step1.classList.remove('active');
+      step2.classList.add('active');
+      step3.classList.remove('active');
+    } else {
+      step1.classList.add('active'); step1.classList.remove('done');
+      step2.classList.remove('active', 'done');
+      step3.classList.remove('active', 'done');
+    }
+  }
+
+  // ── File handling ────────────────────────────────────────────────────────────
+  function handleFiles(fileList) {
+    const files = Array.from(fileList);
+    if (!files.length) return;
+
+    let added = 0;
+    files.forEach(file => {
+      if (!file.type.startsWith('image/')) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        pending.push({ file, preview: e.target.result });
+        renderGrid();
+      };
+      reader.onerror = () => {
+        showStatus('Could not read one of the selected files.', 'error');
+      };
+      reader.readAsDataURL(file);
+      added++;
+    });
+
+    if (added > 0) {
+      hideStatus();
+      hideSummary();
+    }
+    updateSteps();
+  }
+
+  function renderGrid() {
+    gridSection.style.display = pending.length ? 'block' : 'none';
+    gridCount.textContent = pending.length;
+    submitBtn.disabled = pending.length === 0 || isUploading;
+
+    imageGrid.innerHTML = pending.map((item, i) => `
+      <div class="grid-item">
+        <img src="${item.preview}" alt="Photo ${i + 1}" loading="lazy">
+        <span class="num-badge">${i + 1}</span>
+        <button class="remove-img" data-idx="${i}" type="button" aria-label="Remove photo">✕</button>
+      </div>
+    `).join('');
+
+    imageGrid.querySelectorAll('.remove-img').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (isUploading) return;
+        pending.splice(Number(btn.dataset.idx), 1);
+        renderGrid();
+        updateSteps();
+      });
+    });
+
+    updateSteps();
+  }
+
+  function clearAll() {
+    if (isUploading) return;
+    pending = [];
+    renderGrid();
+    hideStatus();
+  }
+
+  // ── Upload ───────────────────────────────────────────────────────────────────
+  async function uploadAll() {
+    if (pending.length === 0 || isUploading) return;
+
+    isUploading = true;
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<div class="btn-spinner"></div> Uploading…';
+    progressWrap.style.display = 'block';
+    progressBar.style.width = '10%';
+    hideStatus();
+    updateSteps();
+
+    const formData = new FormData();
+    pending.forEach((item, i) => {
+      const ext = (item.file.type.split('/')[1] || 'jpg').toLowerCase();
+      formData.append('images', item.file, `photo-${i + 1}.${ext}`);
+    });
+
+    try {
+      progressBar.style.width = '30%';
+
+      const resp = await fetch(UPLOAD_URL, { method: 'POST', body: formData });
+
+      progressBar.style.width = '75%';
+
+      let data;
+      try {
+        data = await resp.json();
+      } catch (e) {
+        // Server returned non-JSON
+        if (!resp.ok) throw new Error('Server error (' + resp.status + ')');
+        data = { uploaded: pending.length, total: totalUploaded + pending.length };
+      }
+
+      if (!resp.ok) throw new Error(data.error || `Upload failed (${resp.status})`);
+
+      progressBar.style.width = '100%';
+
+      totalUploaded = data.total;
+      const uploadedNow = data.uploaded;
+      pending = [];
+      renderGrid();
+
+      // Show summary card
+      totalCountEl.textContent = totalUploaded;
+      summaryCard.style.display = 'block';
+      summaryCard.classList.add('show');
+      showStatus(`${uploadedNow} photo${uploadedNow !== 1 ? 's' : ''} uploaded successfully! Total in session: ${totalUploaded}`, 'success');
+
+    } catch (err) {
+      showStatus('Upload failed: ' + (err.message || 'Unknown error'), 'error');
+      progressBar.style.width = '0%';
+    } finally {
+      // ── FIX: Always reset the button, regardless of success/failure ──
+      isUploading = false;
+      submitBtn.innerHTML = 'Submit Photos';
+      submitBtn.disabled = pending.length === 0;
+      // Hide progress bar after a short delay
+      setTimeout(() => {
+        progressWrap.style.display = 'none';
+        progressBar.style.width = '0%';
+      }, 700);
+      updateSteps();
+    }
+  }
+
+  // ── UI helpers ───────────────────────────────────────────────────────────────
+  function showUploadUI() {
+    hideSummary();
+    hideStatus();
+    submitBtn.innerHTML = 'Submit Photos';
+    submitBtn.disabled = pending.length === 0;
+    renderGrid();
+    updateSteps();
+    // Scroll to top of upload zone
+    uploadZone.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+
+  function hideSummary() {
+    summaryCard.style.display = 'none';
+    summaryCard.classList.remove('show');
+  }
+
+  function showStatus(msg, type) {
+    const icons = { success: '✓', error: '!', info: 'i' };
+    statusMsg.innerHTML = `<span class="s-icon">${icons[type] || 'i'}</span><span>${escapeHtml(msg)}</span>`;
+    statusMsg.className = `status show ${type}`;
+  }
+
+  function hideStatus() {
+    statusMsg.className = 'status';
+    statusMsg.innerHTML = '';
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  // ── Init ─────────────────────────────────────────────────────────────────────
+  updateSteps();
+</script>
+</body>
+</html>
