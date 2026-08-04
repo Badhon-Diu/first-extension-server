@@ -472,6 +472,8 @@
     hideMsg();
     try {
       const provider = new firebase.auth.GoogleAuthProvider();
+      // Always show the account chooser so the user can pick a different account
+      provider.setCustomParameters({ prompt: 'select_account' });
       const cred = await auth.signInWithPopup(provider);
       await onAuthSuccess(cred.user);
     } catch (err) {
@@ -533,16 +535,24 @@
   });
 
   // ── Auto-login if already signed in ─────────────────────────────────────────
+  // Only in standalone mode (browser session). In popup mode we must NOT reuse a
+  // cached Firebase session — the user needs to actively pick an account, so the
+  // popup always starts signed out.
   let authStateChecked = false;
-  auth.onAuthStateChanged(user => {
-    if (user && !authStateChecked) {
-      authStateChecked = true;
-      onAuthSuccess(user).catch(() => {});
-    }
-  });
+  if (isPopup) {
+    auth.signOut().catch(() => {});
+    authStateChecked = true;
+  } else {
+    auth.onAuthStateChanged(user => {
+      if (user && !authStateChecked) {
+        authStateChecked = true;
+        onAuthSuccess(user).catch(() => {});
+      }
+    });
 
-  // If no auth state change within 500ms, stop waiting (fresh page)
-  setTimeout(() => { authStateChecked = true; }, 500);
+    // If no auth state change within 500ms, stop waiting (fresh page)
+    setTimeout(() => { authStateChecked = true; }, 500);
+  }
 
   setMode('login');
 </script>
