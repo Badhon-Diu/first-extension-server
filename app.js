@@ -71,7 +71,11 @@ app.use('/api/session',        requireAuth, sessionRouter);  // GET /:uuid  |  P
 app.use((err, _req, res, _next) => {
   const message = err.code === 'LIMIT_FILE_SIZE'
     ? 'File too large (max 50 MB for audio, 10 MB per image)'
-    : err.message || 'An unexpected error occurred';
+    : err.code === 'LIMIT_UNEXPECTED_FILE'
+      ? 'Too many files — maximum 10 images per request'
+      : err.code === 'LIMIT_FILE_COUNT'
+        ? 'Too many files — maximum 30 images per session'
+        : err.message || 'An unexpected error occurred';
 
   console.error('[Server] Unhandled error:', message);
   res.status(400).json({ error: message });

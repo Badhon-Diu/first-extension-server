@@ -13,39 +13,22 @@ async function analyzeAudio(filePath, mimeType, students = []) {
   try {
     const audioBuffer = fs.readFileSync(filePath);
     const ext = path.extname(filePath) || '.webm';
+    const filename = 'audio' + ext;
 
-    const boundary = '----FormBoundary' + Math.random().toString(36).slice(2);
-    const parts = [];
+    // Use the native FormData/Blob API (Node 18+) instead of hand-building the
+    // multipart body. fetch() sets the boundary + Content-Length automatically,
+    // so filenames with quotes/spaces/non-ASCII chars can't corrupt the headers.
+    const formData = new FormData();
+    formData.append('audio', new Blob([audioBuffer], { type: mimeType || 'audio/mpeg' }), filename);
 
-    // Audio file part
-    let header = `--${boundary}\r\n`;
-    header += `Content-Disposition: form-data; name="audio"; filename="audio${ext}"\r\n`;
-    header += `Content-Type: ${mimeType || 'audio/mpeg'}\r\n\r\n`;
-    parts.push(Buffer.from(header, 'utf-8'));
-    parts.push(audioBuffer);
-    parts.push(Buffer.from('\r\n', 'utf-8'));
-
-    // Optional dataset part
+    // Optional dataset part (matches the field name the Audio API expects)
     if (students && Array.isArray(students) && students.length > 0) {
-      let dsHeader = `--${boundary}\r\n`;
-      dsHeader += `Content-Disposition: form-data; name="dataset"\r\n\r\n`;
-      dsHeader += JSON.stringify(students);
-      dsHeader += '\r\n';
-      parts.push(Buffer.from(dsHeader, 'utf-8'));
+      formData.append('dataset', JSON.stringify(students));
     }
-
-    // Closing boundary
-    parts.push(Buffer.from(`--${boundary}--\r\n`, 'utf-8'));
-
-    const bodyBuffer = Buffer.concat(parts);
 
     const response = await fetch(apiUrl, {
       method: 'POST',
-      headers: {
-        'Content-Type': `multipart/form-data; boundary=${boundary}`,
-        'Content-Length': String(bodyBuffer.length),
-      },
-      body: bodyBuffer,
+      body: formData,
       signal,
     });
 

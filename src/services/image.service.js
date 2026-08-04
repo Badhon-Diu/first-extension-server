@@ -17,7 +17,13 @@ async function analyzeAllImages(files, students = []) {
 
   const formData = new FormData();
   for (const file of files) {
-    formData.append('images', new Blob([file.buffer], { type: file.mimetype }), file.originalname);
+    // new Uint8Array(buffer) copies exactly the Buffer's bytes — safe on older
+    // Node versions where Blob mishandles typed-array views (byteOffset > 0).
+    formData.append(
+      'images',
+      new Blob([new Uint8Array(file.buffer)], { type: file.mimetype }),
+      file.originalname
+    );
   }
   if (students.length > 0) {
     formData.append('students', JSON.stringify(students));
