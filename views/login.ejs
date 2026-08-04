@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#22c55e">
+  <title>DIU IntelliMarks — Sign in</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green:      #22c55e;
+      --green-d:    #16a34a;
+      --green-dd:   #15803d;
+      --green-l:    #dcfce7;
+      --green-xl:   #f0fdf4;
+      --red:        #ef4444;
+      --red-d:      #dc2626;
+      --red-l:      #fef2f2;
+      --bg:         #f8fafc;
+      --card:       #ffffff;
+      --border:     #e5e7eb;
+      --border-d:   #d1d5db;
+      --text:       #111827;
+      --text-2:     #374151;
+      --muted:      #6b7280;
+      --muted-l:    #9ca3af;
+      --r-sm: 8px;
+      --r:    12px;
+      --r-lg: 16px;
+      --shadow:    0 4px 6px -1px rgba(0,0,0,.06), 0 2px 4px -2px rgba(0,0,0,.05);
+      --shadow-lg: 0 10px 25px -5px rgba(0,0,0,.1), 0 8px 10px -6px rgba(0,0,0,.06);
+      --shadow-green: 0 4px 14px rgba(34,197,94,.3);
+    }
+
+    html, body {
+      min-height: 100vh;
+      background: linear-gradient(160deg, #0f172a 0%, #14532d 55%, #16a34a 100%);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 16px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 420px;
+      background: var(--card);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      animation: rise .35s ease;
+    }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-head {
+      padding: 28px 28px 18px;
+      text-align: center;
+    }
+    .logo {
+      width: 52px; height: 52px;
+      margin: 0 auto 12px;
+      background: var(--green-xl);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: var(--shadow);
+    }
+    .logo img { width: 30px; height: 30px; }
+    .card-head h1 {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--text);
+    }
+    .card-head p {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+
+    .tabs {
+      display: flex;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+    }
+    .tab {
+      flex: 1;
+      padding: 12px;
+      background: none;
+      border: none;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--muted);
+      cursor: pointer;
+      position: relative;
+      transition: color .15s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .tab::after {
+      content: '';
+      position: absolute;
+      left: 50%; bottom: -1px;
+      transform: translateX(-50%);
+      width: 0; height: 3px;
+      background: var(--green);
+      border-radius: 3px 3px 0 0;
+      transition: width .2s ease;
+    }
+    .tab.active { color: var(--green-dd); }
+    .tab.active::after { width: 60%; }
+
+    .card-body { padding: 22px 28px 28px; }
+
+    .field { margin-bottom: 14px; }
+    .field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-2);
+      margin-bottom: 6px;
+    }
+    .field input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--r);
+      font-size: 14px;
+      color: var(--text);
+      background: #fff;
+      transition: border-color .15s, box-shadow .15s;
+      outline: none;
+    }
+    .field input:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(34,197,94,.15);
+    }
+    .field input::placeholder { color: var(--muted-l); }
+
+    .btn-primary {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: #fff;
+      border: none;
+      border-radius: var(--r);
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      box-shadow: var(--shadow-green);
+      transition: transform .15s, box-shadow .15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(34,197,94,.4); }
+    .btn-primary:active { transform: scale(.98); }
+    .btn-primary:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 18px 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .btn-google {
+      width: 100%;
+      padding: 13px;
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: var(--r);
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-2);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: background .15s, border-color .15s;
+    }
+    .btn-google:hover { background: var(--bg); border-color: var(--border-d); }
+    .btn-google svg { width: 18px; height: 18px; flex-shrink: 0; }
+
+    .msg {
+      margin-top: 16px;
+      padding: 12px 14px;
+      border-radius: var(--r);
+      font-size: 13px;
+      font-weight: 600;
+      line-height: 1.5;
+      display: none;
+      animation: fadeIn .2s ease;
+    }
+    .msg.show { display: block; }
+    .msg.error { background: var(--red-l); border: 1px solid #fecaca; color: var(--red-d); }
+    .msg.success { background: var(--green-l); border: 1px solid #bbf7d0; color: var(--green-dd); }
+
+    .token-box {
+      margin-top: 16px;
+      display: none;
+      animation: fadeIn .2s ease;
+    }
+    .token-box.show { display: block; }
+    .token-box .tb-label {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--text-2);
+      margin-bottom: 6px;
+    }
+    .token-wrap {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+    .token-wrap textarea {
+      width: 100%;
+      height: 84px;
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--r);
+      font-family: ui-monospace, 'SF Mono', Menlo, monospace;
+      font-size: 11px;
+      color: var(--text-2);
+      resize: none;
+      background: var(--bg);
+      outline: none;
+      overflow: auto;
+    }
+    .copy-btn {
+      position: absolute;
+      right: 8px; top: 8px;
+      background: var(--green);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 6px 10px;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .copy-btn:hover { background: var(--green-d); }
+
+    .hint {
+      margin-top: 18px;
+      background: var(--green-xl);
+      border: 1px solid var(--green-l);
+      border-radius: var(--r);
+      padding: 12px 14px;
+      font-size: 12px;
+      color: var(--text-2);
+      line-height: 1.55;
+      display: none;
+    }
+    .hint.show { display: block; }
+    .hint strong { color: var(--green-dd); }
+
+    .switch-note {
+      margin-top: 16px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .btn-spinner {
+      width: 15px; height: 15px;
+      border: 2.5px solid rgba(255,255,255,.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <div class="card-head">
+    <div class="logo"><img src="/exicon.svg" alt="DIU IntelliMarks"></div>
+    <h1>DIU IntelliMarks</h1>
+    <p>Sign in to use the Mark Extraction extension</p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" id="tabLogin" type="button">Login</button>
+    <button class="tab" id="tabSignup" type="button">Sign Up</button>
+  </div>
+
+  <div class="card-body">
+    <!-- Google -->
+    <button class="btn-google" id="googleBtn" type="button">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47a5.57 5.57 0 0 1-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z"/>
+        <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09A11.99 11.99 0 0 0 12 24z"/>
+        <path fill="#FBBC05" d="M5.27 14.29A7.2 7.2 0 0 1 4.89 12c0-.8.14-1.57.38-2.29V6.62H1.29a11.99 11.99 0 0 0 0 10.76l3.98-3.09z"/>
+        <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.69 1.29 6.62l3.98 3.09C6.22 6.86 8.87 4.75 12 4.75z"/>
+      </svg>
+      Continue with Google
+    </button>
+
+    <div class="divider">or use email</div>
+
+    <!-- Email form (shared fields, JS switches action) -->
+    <div class="field">
+      <label for="emailInput">Email</label>
+      <input id="emailInput" type="email" placeholder="you@example.com" autocomplete="email">
+    </div>
+    <div class="field">
+      <label for="passInput">Password</label>
+      <input id="passInput" type="password" placeholder="At least 6 characters" autocomplete="current-password">
+    </div>
+    <div class="field" id="nameField" style="display:none">
+      <label for="nameInput">Full Name</label>
+      <input id="nameInput" type="text" placeholder="Your name" autocomplete="name">
+    </div>
+
+    <button class="btn-primary" id="submitBtn" type="button">Login</button>
+
+    <div class="msg" id="msg"></div>
+
+    <!-- Token output -->
+    <div class="token-box" id="tokenBox">
+      <div class="tb-label">Your access token — copy it into the extension settings</div>
+      <div class="token-wrap">
+        <textarea id="tokenArea" readonly></textarea>
+        <button class="copy-btn" id="copyBtn" type="button">Copy</button>
+      </div>
+    </div>
+
+    <div class="hint" id="hint">
+      Paste this token in the extension's <strong>Settings → Access Token</strong> field.
+      The extension will send it with every request. Tokens expire automatically — sign in again to get a fresh one.
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+  'use strict';
+
+  const firebaseConfig = <%- firebaseConfig %>;
+  firebase.initializeApp(firebaseConfig);
+
+  const auth = firebase.auth();
+
+  // ── Popup mode detection ────────────────────────────────────────────────────
+  // When opened by the extension: window.opener exists
+  // Token is sent via postMessage — no manual copy needed.
+  const isPopup = !!(window.opener && window.opener !== window);
+
+  // ── DOM refs ────────────────────────────────────────────────────────────────
+  const tabLogin   = document.getElementById('tabLogin');
+  const tabSignup  = document.getElementById('tabSignup');
+  const googleBtn  = document.getElementById('googleBtn');
+  const submitBtn  = document.getElementById('submitBtn');
+  const emailInput = document.getElementById('emailInput');
+  const passInput  = document.getElementById('passInput');
+  const nameInput  = document.getElementById('nameInput');
+  const nameField  = document.getElementById('nameField');
+  const msg        = document.getElementById('msg');
+  const tokenBox   = document.getElementById('tokenBox');
+  const tokenArea  = document.getElementById('tokenArea');
+  const copyBtn    = document.getElementById('copyBtn');
+  const hint       = document.getElementById('hint');
+
+  let mode = 'login'; // 'login' | 'signup'
+  let hasSentToken = false; // prevent duplicate postMessage calls
+
+  // ── Tabs ────────────────────────────────────────────────────────────────────
+  function setMode(m) {
+    mode = m;
+    tabLogin.classList.toggle('active', m === 'login');
+    tabSignup.classList.toggle('active', m === 'signup');
+    nameField.style.display = m === 'signup' ? 'block' : 'none';
+    submitBtn.textContent = m === 'login' ? 'Login' : 'Create Account';
+    passInput.autocomplete = m === 'login' ? 'current-password' : 'new-password';
+    hideMsg();
+    if (!isPopup) {
+      tokenBox.classList.remove('show');
+      hint.classList.remove('show');
+    }
+  }
+  tabLogin.addEventListener('click', () => setMode('login'));
+  tabSignup.addEventListener('click', () => setMode('signup'));
+
+  // ── Helpers ─────────────────────────────────────────────────────────────────
+  function showMsg(text, type) {
+    msg.textContent = text;
+    msg.className = 'msg show ' + type;
+  }
+  function hideMsg() {
+    msg.className = 'msg';
+    msg.textContent = '';
+  }
+
+  async function onAuthSuccess(user) {
+    const token = await user.getIdToken(true);
+
+    if (isPopup) {
+      // Popup mode — send token to extension and close
+      if (!hasSentToken) {
+        hasSentToken = true;
+        window.opener.postMessage({ type: 'FIREBASE_AUTH_SUCCESS', token, email: user.email, displayName: user.displayName, uid: user.uid }, '*');
+        showMsg('Authenticated! This window will close automatically…', 'success');
+        setTimeout(() => window.close(), 800);
+      }
+      return;
+    }
+
+    // Standalone mode — show token copy field
+    tokenArea.value = token;
+    tokenBox.classList.add('show');
+    hint.classList.add('show');
+    const name = user.displayName || user.email || 'there';
+    showMsg('Signed in as ' + name + '. Copy your token below.', 'success');
+  }
+
+  function onAuthError(err) {
+    const map = {
+      'auth/invalid-email':        'That email address looks invalid.',
+      'auth/user-not-found':       'No account found with this email. Try signing up.',
+      'auth/wrong-password':       'Incorrect password. Please try again.',
+      'auth/weak-password':        'Password must be at least 6 characters.',
+      'auth/email-already-in-use': 'An account with this email already exists. Try logging in.',
+      'auth/too-many-requests':    'Too many attempts. Please wait a moment and retry.',
+      'auth/popup-closed-by-user': 'Google sign-in was cancelled.',
+    };
+    showMsg(map[err.code] || (err.message || 'Something went wrong.'), 'error');
+  }
+
+  // ── Google sign-in ──────────────────────────────────────────────────────────
+  googleBtn.addEventListener('click', async () => {
+    googleBtn.disabled = true;
+    hideMsg();
+    try {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      const cred = await auth.signInWithPopup(provider);
+      await onAuthSuccess(cred.user);
+    } catch (err) {
+      onAuthError(err);
+    } finally {
+      googleBtn.disabled = false;
+    }
+  });
+
+  // ── Email / password ────────────────────────────────────────────────────────
+  submitBtn.addEventListener('click', async () => {
+    const email = emailInput.value.trim();
+    const pass  = passInput.value;
+
+    if (!email || !pass) {
+      return showMsg('Please fill in both email and password.', 'error');
+    }
+    if (mode === 'signup' && pass.length < 6) {
+      return showMsg('Password must be at least 6 characters.', 'error');
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="btn-spinner"></span> Please wait…';
+    hideMsg();
+
+    try {
+      let cred;
+      if (mode === 'signup') {
+        cred = await auth.createUserWithEmailAndPassword(email, pass);
+        const name = nameInput.value.trim();
+        if (name) await cred.user.updateProfile({ displayName: name });
+      } else {
+        cred = await auth.signInWithEmailAndPassword(email, pass);
+      }
+      await onAuthSuccess(cred.user);
+    } catch (err) {
+      onAuthError(err);
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = mode === 'login' ? 'Login' : 'Create Account';
+    }
+  });
+
+  // Enter key submits
+  passInput.addEventListener('keydown', e => { if (e.key === 'Enter') submitBtn.click(); });
+
+  // ── Copy token (standalone mode only) ───────────────────────────────────────
+  copyBtn.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(tokenArea.value);
+      copyBtn.textContent = 'Copied!';
+      setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1500);
+    } catch (e) {
+      tokenArea.select();
+      document.execCommand('copy');
+      copyBtn.textContent = 'Copied!';
+      setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1500);
+    }
+  });
+
+  // ── Auto-login if already signed in ─────────────────────────────────────────
+  let authStateChecked = false;
+  auth.onAuthStateChanged(user => {
+    if (user && !authStateChecked) {
+      authStateChecked = true;
+      onAuthSuccess(user).catch(() => {});
+    }
+  });
+
+  // If no auth state change within 500ms, stop waiting (fresh page)
+  setTimeout(() => { authStateChecked = true; }, 500);
+
+  setMode('login');
+</script>
+</body>
+</html>

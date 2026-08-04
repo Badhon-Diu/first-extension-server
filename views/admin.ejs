@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#22c55e">
+  <title>Admin — DIU IntelliMarks Users</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --green:      #22c55e;
+      --green-d:    #16a34a;
+      --green-dd:   #15803d;
+      --green-l:    #dcfce7;
+      --green-xl:   #f0fdf4;
+      --red:        #ef4444;
+      --red-d:      #dc2626;
+      --red-l:      #fef2f2;
+      --bg:         #f8fafc;
+      --card:       #ffffff;
+      --border:     #e5e7eb;
+      --border-d:   #d1d5db;
+      --text:       #111827;
+      --text-2:     #374151;
+      --muted:      #6b7280;
+      --muted-l:    #9ca3af;
+      --r-sm: 8px;
+      --r:    12px;
+      --r-lg: 16px;
+      --shadow:    0 4px 6px -1px rgba(0,0,0,.06), 0 2px 4px -2px rgba(0,0,0,.05);
+      --shadow-lg: 0 10px 25px -5px rgba(0,0,0,.1), 0 8px 10px -6px rgba(0,0,0,.06);
+      --shadow-green: 0 4px 14px rgba(34,197,94,.3);
+    }
+
+    html, body {
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .header {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      background: rgba(255,255,255,.88);
+      backdrop-filter: saturate(180%) blur(12px);
+      -webkit-backdrop-filter: saturate(180%) blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .logo {
+      width: 40px; height: 40px;
+      background: var(--green-xl);
+      border-radius: 11px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .logo img { width: 24px; height: 24px; }
+    .header-text h1 {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+    .header-text p {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+    .header-actions {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .admin-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-2);
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 6px 12px;
+      border-radius: 20px;
+    }
+    .admin-chip .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--green);
+    }
+    .logout-btn {
+      background: none;
+      border: 1.5px solid var(--border);
+      border-radius: var(--r-sm);
+      padding: 7px 14px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-2);
+      cursor: pointer;
+      transition: all .15s;
+    }
+    .logout-btn:hover { background: var(--red-l); border-color: var(--red); color: var(--red-d); }
+
+    .container {
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 24px 20px 60px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 18px 20px;
+      box-shadow: var(--shadow);
+    }
+    .stat-card .num {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--green-dd);
+      line-height: 1;
+    }
+    .stat-card .lbl {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+      font-weight: 600;
+    }
+    .stat-card .sub {
+      font-size: 11px;
+      color: var(--muted-l);
+      margin-top: 2px;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .search {
+      flex: 1;
+      min-width: 220px;
+      position: relative;
+    }
+    .search input {
+      width: 100%;
+      padding: 11px 14px 11px 40px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--r);
+      font-size: 14px;
+      outline: none;
+      background: var(--card);
+      transition: border-color .15s, box-shadow .15s;
+    }
+    .search input:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 3px rgba(34,197,94,.12);
+    }
+    .search svg {
+      position: absolute;
+      left: 13px; top: 50%;
+      transform: translateY(-50%);
+      width: 16px; height: 16px;
+      color: var(--muted-l);
+    }
+    .filter {
+      padding: 11px 14px;
+      border: 1.5px solid var(--border);
+      border-radius: var(--r);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-2);
+      background: var(--card);
+      outline: none;
+      cursor: pointer;
+    }
+
+    .table-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+    .table-wrap { overflow-x: auto; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 720px;
+    }
+    thead th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--muted);
+      background: var(--bg);
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+    tbody td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+      vertical-align: middle;
+    }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr { transition: background .12s; }
+    tbody tr:hover { background: var(--green-xl); }
+
+    .user-cell { display: flex; align-items: center; gap: 12px; }
+    .avatar {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #d1fae5, #86efac);
+      color: var(--green-dd);
+      font-weight: 800;
+      font-size: 15px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .user-name {
+      font-weight: 700;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .user-email { font-size: 12px; color: var(--muted); margin-top: 2px; word-break: break-all; }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 4px 10px;
+      border-radius: 20px;
+      white-space: nowrap;
+    }
+    .badge.google { background: #eef2ff; color: #4338ca; }
+    .badge.password { background: var(--green-l); color: var(--green-dd); }
+    .badge.unknown { background: #f3f4f6; color: var(--muted); }
+    .badge.you { background: #fef3c7; color: #b45309; }
+    .badge.disabled { background: var(--red-l); color: var(--red-d); }
+
+    .time { font-size: 12px; color: var(--muted); white-space: nowrap; }
+
+    .del-btn {
+      background: none;
+      border: 1.5px solid var(--border);
+      color: var(--red);
+      border-radius: var(--r-sm);
+      padding: 7px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap;
+    }
+    .del-btn:hover {
+      background: var(--red);
+      border-color: var(--red);
+      color: #fff;
+    }
+    .del-btn:disabled { opacity: .5; cursor: not-allowed; }
+
+    .empty {
+      text-align: center;
+      padding: 48px 20px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .empty .big { font-size: 34px; margin-bottom: 10px; }
+
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: var(--text);
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 12px 20px;
+      border-radius: var(--r);
+      box-shadow: var(--shadow-lg);
+      opacity: 0;
+      transition: all .25s ease;
+      z-index: 100;
+      max-width: 90%;
+      text-align: center;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.success { background: var(--green-dd); }
+    .toast.error { background: var(--red-d); }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    tbody tr { animation: fadeIn .2s ease; }
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="logo"><img src="/exicon.svg" alt="DIU IntelliMarks"></div>
+  <div class="header-text">
+    <h1>Admin Dashboard</h1>
+    <p>Registered users of DIU IntelliMarks</p>
+  </div>
+  <div class="header-actions">
+    <div class="admin-chip"><span class="dot"></span><%= admin.email || 'Admin' %></div>
+    <button class="logout-btn" id="logoutBtn" type="button">Log out</button>
+  </div>
+</div>
+
+<div class="container">
+  <div class="stats">
+    <div class="stat-card">
+      <div class="num"><%= count %></div>
+      <div class="lbl">Total Users</div>
+      <div class="sub">Across all providers</div>
+    </div>
+    <div class="stat-card">
+      <div class="num" id="statGoogle">–</div>
+      <div class="lbl">Google</div>
+      <div class="sub">Signed in via Google</div>
+    </div>
+    <div class="stat-card">
+      <div class="num" id="statEmail">–</div>
+      <div class="lbl">Email / Password</div>
+      <div class="sub">Signed up with email</div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="searchInput" placeholder="Search by name or email…">
+    </div>
+    <select class="filter" id="providerFilter">
+      <option value="all">All providers</option>
+      <option value="Google">Google</option>
+      <option value="Email / Password">Email / Password</option>
+    </select>
+  </div>
+
+  <div class="table-card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>User</th>
+            <th>Provider</th>
+            <th>Created</th>
+            <th>Last Login</th>
+            <th style="text-align:right">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="userRows"></tbody>
+      </table>
+    </div>
+    <div class="empty" id="emptyState" style="display:none">
+      <div class="big">🔍</div>
+      No users match your search.
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+  'use strict';
+
+  // EJS data
+  const USERS   = <%- JSON.stringify(users) %>;
+  const ME_EMAIL = '<%- admin.email || "" %>'.toLowerCase();
+
+  // ── DOM refs ────────────────────────────────────────────────────────────────
+  const tbody          = document.getElementById('userRows');
+  const emptyState     = document.getElementById('emptyState');
+  const searchInput    = document.getElementById('searchInput');
+  const providerFilter = document.getElementById('providerFilter');
+  const toast          = document.getElementById('toast');
+  const logoutBtn      = document.getElementById('logoutBtn');
+
+  let list = USERS;
+
+  // ── Stats ───────────────────────────────────────────────────────────────────
+  document.getElementById('statGoogle').textContent =
+    USERS.filter(u => u.provider === 'Google').length;
+  document.getElementById('statEmail').textContent =
+    USERS.filter(u => u.provider === 'Email / Password').length;
+
+  // ── Helpers ─────────────────────────────────────────────────────────────────
+  function initials(name) {
+    const parts = (name || '?').trim().split(/\s+/);
+    return ((parts[0] || '?')[0] + (parts[1] ? parts[1][0] : '')).toUpperCase();
+  }
+
+  function fmtDate(str) {
+    if (!str) return '—';
+    const d = new Date(str);
+    if (isNaN(d)) return '—';
+    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  function providerClass(p) {
+    if (p === 'Google') return 'google';
+    if (p === 'Email / Password') return 'password';
+    return 'unknown';
+  }
+
+  let toastTimer = null;
+  function showToast(text, type) {
+    toast.textContent = text;
+    toast.className = 'toast show ' + (type || '');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => { toast.className = 'toast'; }, 2600);
+  }
+
+  // ── Rendering ───────────────────────────────────────────────────────────────
+  function render() {
+    const q = searchInput.value.trim().toLowerCase();
+    const p = providerFilter.value;
+
+    const filtered = list.filter(u => {
+      const matchQ = !q ||
+        (u.displayName || '').toLowerCase().includes(q) ||
+        (u.email || '').toLowerCase().includes(q);
+      const matchP = p === 'all' || u.provider === p;
+      return matchQ && matchP;
+    });
+
+    emptyState.style.display = filtered.length ? 'none' : 'block';
+
+    tbody.innerHTML = filtered.map(u => {
+      const isMe = u.email.toLowerCase() === ME_EMAIL;
+      const nameHtml = isMe
+        ? `<span class="user-name">${escapeHtml(u.displayName)} <span class="badge you">You</span></span>`
+        : `<span class="user-name">${escapeHtml(u.displayName)}</span>`;
+      const avatar = u.photoURL
+        ? `<img src="${escapeAttr(u.photoURL)}" alt="">`
+        : initials(u.displayName);
+
+      return `
+      <tr data-uid="${escapeAttr(u.uid)}">
+        <td>
+          <div class="user-cell">
+            <div class="avatar">${avatar}</div>
+            <div>
+              ${nameHtml}
+              <div class="user-email">${escapeHtml(u.email)}</div>
+            </div>
+          </div>
+        </td>
+        <td><span class="badge ${providerClass(u.provider)}">${escapeHtml(u.provider)}</span></td>
+        <td class="time">${fmtDate(u.createdAt)}</td>
+        <td class="time">${fmtDate(u.lastLogin)}</td>
+        <td style="text-align:right">
+          <button class="del-btn" data-uid="${escapeAttr(u.uid)}" data-name="${escapeAttr(u.displayName)}"
+            ${isMe ? 'disabled title="You cannot delete your own account"' : ''}>Delete</button>
+        </td>
+      </tr>`;
+    }).join('');
+
+    // Bind delete handlers
+    tbody.querySelectorAll('.del-btn:not(:disabled)').forEach(btn => {
+      btn.addEventListener('click', () => confirmDelete(btn.dataset.uid, btn.dataset.name, btn));
+    });
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str == null ? '' : String(str);
+    return div.innerHTML;
+  }
+  function escapeAttr(str) {
+    return (str == null ? '' : String(str)).replace(/"/g, '&quot;');
+  }
+
+  // ── Delete ──────────────────────────────────────────────────────────────────
+  async function confirmDelete(uid, name, btn) {
+    if (!confirm(`Delete user "${name}"?\n\nThis permanently removes their account.`)) return;
+
+    btn.disabled = true;
+    try {
+      const resp = await fetch('/api/admin/users/' + encodeURIComponent(uid), { method: 'DELETE' });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) throw new Error(data.error || 'Delete failed (' + resp.status + ')');
+
+      list = list.filter(u => u.uid !== uid);
+      render();
+      showToast('Deleted ' + (name || uid), 'success');
+    } catch (err) {
+      btn.disabled = false;
+      showToast(err.message || 'Delete failed', 'error');
+    }
+  }
+
+  // ── Logout ──────────────────────────────────────────────────────────────────
+  logoutBtn.addEventListener('click', async () => {
+    try { await fetch('/api/auth/revoke', { method: 'POST' }); } catch (e) {}
+    // No server session is kept — the Firebase token simply expires.
+    showToast('You can now close this tab. Your token will expire on its own.', 'success');
+  });
+
+  // ── Events ──────────────────────────────────────────────────────────────────
+  searchInput.addEventListener('input', render);
+  providerFilter.addEventListener('change', render);
+
+  render();
+</script>
+</body>
+</html>

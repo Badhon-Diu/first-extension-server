@@ -1,0 +1,1507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DIU Marks Auto-Fill</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+    :root {
+      --bg: #ffffff;
+      --bg-card: #ffffff;
+      --bg-input: #f7f8fa;
+      --bg-hover: #f0f2f5;
+      --bg-muted: #f4f5f7;
+      --border: #e8ebef;
+      --border-light: #f0f2f5;
+      --text-primary: #1a1d23;
+      --text-secondary: #5f6880;
+      --text-muted: #9aa3b4;
+      --accent: #d5d7e1;
+      --accent-hover: #3d5ce5;
+      --accent-light: #eef1fe;
+      --accent-bg: rgba(79, 110, 247, 0.08);
+      --success: #22c55e;
+      --success-light: rgba(34, 197, 94, 0.08);
+      --success-border: rgba(34, 197, 94, 0.15);
+      --error: #ef4444;
+      --error-light: rgba(239, 68, 68, 0.08);
+      --error-border: rgba(239, 68, 68, 0.15);
+      --shadow-card: 0 1px 3px rgba(0,0,0,0.04), 0 1px 2px rgba(0,0,0,0.02);
+      --shadow-card-hover: 0 4px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+      --shadow-btn: 0 1px 3px rgba(79, 110, 247, 0.2);
+      --shadow-btn-hover: 0 4px 12px rgba(79, 110, 247, 0.3);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 14px;
+      --radius-xl: 16px;
+      --transition: 180ms ease;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 380px;
+      min-height: 480px;
+      max-height: 600px;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+      overflow: hidden;
+    }
+
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--text-muted); }
+
+    .saved-data, .file-list, .ai-results-content, .voice-chat-container {
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+
+    /* ─── Header ─── */
+    .header {
+      background: var(--bg);
+      padding: 16px 20px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-icon {
+      width: 32px;
+      height: 32px;
+      background: var(--accent);
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 2px 8px rgba(239, 240, 243, 0.25);
+    }
+
+    .logo-text {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.3px;
+    }
+
+    /* ─── Tabs ─── */
+    .tab-container {
+      background: var(--bg-muted);
+      margin: 0 16px;
+      padding: 3px;
+      display: flex;
+      gap: 2px;
+      border-radius: 10px;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 8px 6px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 12px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all var(--transition);
+      letter-spacing: 0.1px;
+    }
+
+    .tab:hover {
+      color: var(--text-secondary);
+    }
+
+    .tab.active {
+      background: var(--bg);
+      color: var(--text-primary);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    /* ─── Content ─── */
+    .content {
+      padding: 14px 16px 20px;
+      height: calc(100vh - 96px);
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    .tab-content {
+      display: none;
+      animation: fadeIn 200ms ease-out;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ─── Section Titles ─── */
+    .section-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+      letter-spacing: -0.4px;
+    }
+
+    .section-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      line-height: 1.5;
+    }
+
+    /* ─── Cards ─── */
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-light);
+      border-radius: var(--radius-lg);
+      padding: 14px;
+      margin-bottom: 10px;
+      transition: box-shadow var(--transition);
+      box-shadow: var(--shadow-card);
+    }
+
+    .card:hover {
+      box-shadow: var(--shadow-card-hover);
+    }
+
+    .card-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+    }
+
+    /* ─── Form Elements ─── */
+    select, input[type="text"], input[type="number"], textarea {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-family: inherit;
+      transition: all var(--transition);
+      background: var(--bg-input);
+      color: var(--text-primary);
+    }
+
+    select {
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239aa3b4' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 10px center;
+      background-size: 14px;
+      padding-right: 30px;
+      cursor: pointer;
+    }
+
+    select:focus, input:focus, textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-bg);
+      background: var(--bg);
+    }
+
+    .data-input {
+      width: 100%;
+      min-height: 100px;
+      padding: 10px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+      resize: vertical;
+      background: var(--bg-input);
+      color: var(--text-primary);
+      line-height: 1.65;
+    }
+
+    .data-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .hint {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 6px;
+      line-height: 1.5;
+    }
+
+    /* ─── Buttons ─── */
+    .btn {
+      width: 100%;
+      padding: 10px 14px;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .btn:active { transform: scale(0.985); }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: var(--shadow-btn);
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      box-shadow: var(--shadow-btn-hover);
+    }
+
+    .btn-regenerate {
+      background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+      color: #fff;
+      box-shadow: 0 1px 3px rgba(245,158,11,0.3);
+    }
+
+    .btn-regenerate:hover {
+      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+      box-shadow: 0 4px 12px rgba(245,158,11,0.4);
+    }
+
+    .btn-process {
+      background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+      color: #fff;
+      box-shadow: 0 1px 3px rgba(139,92,246,0.3);
+    }
+
+    .btn-process:hover {
+      background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+      box-shadow: 0 4px 12px rgba(139,92,246,0.4);
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: #fff;
+      box-shadow: 0 1px 3px rgba(34,197,94,0.2);
+    }
+
+    .btn-success:hover {
+      background: #16a34a;
+      box-shadow: 0 4px 12px rgba(34,197,94,0.3);
+    }
+
+    .btn-secondary {
+      background: var(--bg-input);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-hover);
+      color: var(--text-primary);
+      border-color: var(--border);
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .btn-group .btn { flex: 1; }
+
+    /* ─── Status Messages ─── */
+    .status {
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      margin-top: 8px;
+      display: none;
+      font-weight: 500;
+    }
+
+    .status.success {
+      display: block;
+      background: var(--success-light);
+      color: #15803d;
+      border: 1px solid var(--success-border);
+    }
+
+    .status.error {
+      display: block;
+      background: var(--error-light);
+      color: #b91c1c;
+      border: 1px solid var(--error-border);
+    }
+
+    /* ─── Saved Data List ─── */
+    .saved-data {
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    .student-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 10px;
+      background: var(--bg-input);
+      border-radius: var(--radius-sm);
+      margin-bottom: 4px;
+      transition: background var(--transition);
+    }
+
+    .student-item:hover {
+      background: var(--bg-hover);
+    }
+
+    .student-id {
+      font-weight: 600;
+      color: var(--text-secondary);
+      font-size: 12px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+
+    .student-score {
+      color: var(--accent);
+      font-weight: 700;
+      font-size: 12px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 20px;
+      color: var(--text-muted);
+      font-size: 12px;
+    }
+
+    /* ─── Upload Section ─── */
+    .upload-section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .upload-dropzone {
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-md);
+      padding: 28px 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: all var(--transition);
+      background: var(--bg-input);
+    }
+
+    .upload-dropzone:hover {
+      border-color: var(--accent);
+      background: var(--accent-bg);
+    }
+
+    .upload-dropzone.dragover {
+      border-color: var(--accent);
+      background: var(--accent-bg);
+    }
+
+    .upload-icon {
+      font-size: 28px;
+      margin-bottom: 8px;
+      color: var(--text-muted);
+      transition: color var(--transition);
+      line-height: 1;
+    }
+
+    .upload-dropzone:hover .upload-icon {
+      color: var(--accent);
+    }
+
+    .upload-text {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 3px;
+      font-weight: 600;
+    }
+
+    .upload-subtext {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .upload-formats {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 10px;
+      opacity: 0.8;
+    }
+
+    .file-list {
+      max-height: 160px;
+      overflow-y: auto;
+    }
+
+    .file-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 9px 10px;
+      background: var(--bg-input);
+      border-radius: var(--radius-sm);
+      margin-bottom: 5px;
+      transition: background var(--transition);
+    }
+
+    .file-item:hover { background: var(--bg-hover); }
+
+    .file-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex: 1;
+      min-width: 0;
+    }
+
+    .file-icon {
+      font-size: 16px;
+      color: var(--text-muted);
+      flex-shrink: 0;
+    }
+
+    .file-details { flex: 1; min-width: 0; }
+
+    .file-name {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      word-break: break-all;
+      line-height: 1.4;
+    }
+
+    .file-size {
+      font-size: 10px;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    .file-remove {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 15px;
+      padding: 2px 6px;
+      border-radius: 6px;
+      transition: all var(--transition);
+      flex-shrink: 0;
+    }
+
+    .file-remove:hover {
+      color: var(--error);
+      background: var(--error-light);
+    }
+
+    .file-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .file-count {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .clear-all {
+      font-size: 11px;
+      color: var(--text-muted);
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-family: inherit;
+      transition: all var(--transition);
+    }
+
+    .clear-all:hover {
+      color: var(--error);
+      background: var(--error-light);
+    }
+
+    /* ─── Processing State ─── */
+    .processing {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 160px;
+      text-align: center;
+      padding: 16px;
+    }
+
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border-light);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 14px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .processing-text {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    /* ─── AI Results ─── */
+    .ai-results {
+      background: var(--bg-input);
+      border-radius: var(--radius-sm);
+      padding: 10px;
+      margin-top: 10px;
+    }
+
+    .ai-results-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .ai-results-content {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 12px;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      max-height: 160px;
+      overflow-y: auto;
+    }
+
+    .result-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 5px 8px;
+      background: var(--bg);
+      border-radius: 6px;
+      margin-bottom: 3px;
+    }
+
+    .result-id {
+      color: var(--accent);
+      font-weight: 600;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 12px;
+    }
+
+    .result-score {
+      color: var(--success);
+      font-weight: 700;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 12px;
+    }
+
+    .mismatch-section {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border-light);
+    }
+
+    .mismatch-title {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--error);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .mismatch-item {
+      font-size: 11px;
+      color: var(--error);
+      padding: 3px 8px;
+      background: var(--error-light);
+      border: 1px solid var(--error-border);
+      border-radius: 6px;
+      margin-bottom: 4px;
+      display: inline-block;
+      margin-right: 4px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+
+    .hidden { display: none !important; }
+
+    /* ─── Voice Recording ─── */
+    .voice-section { margin-top: 10px; }
+
+    .voice-record-btn {
+      width: 100%;
+      padding: 18px;
+      border: 2px dashed var(--border);
+      border-radius: var(--radius-md);
+      background: var(--bg-input);
+      cursor: pointer;
+      transition: all var(--transition);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .voice-record-btn:hover {
+      border-color: var(--accent);
+      background: var(--accent-bg);
+    }
+
+    .voice-record-btn.recording {
+      background: var(--error-light);
+      border-color: var(--error);
+      border-style: solid;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.15); }
+      50% { box-shadow: 0 0 0 8px rgba(239,68,68,0); }
+    }
+
+    .voice-icon {
+      font-size: 22px;
+      color: var(--text-muted);
+      transition: color var(--transition);
+      line-height: 1;
+    }
+
+    .voice-record-btn:hover .voice-icon { color: var(--accent); }
+    .voice-record-btn.recording .voice-icon { color: var(--error); }
+
+    .voice-text {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      transition: color var(--transition);
+    }
+
+    .voice-record-btn:hover .voice-text { color: var(--text-primary); }
+    .voice-record-btn.recording .voice-text { color: var(--error); }
+
+    .voice-subtext {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .recording-indicator {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 10px;
+      padding: 7px 12px;
+      background: var(--error-light);
+      border: 1px solid var(--error-border);
+      border-radius: 16px;
+      color: var(--error);
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .recording-dot {
+      width: 6px;
+      height: 6px;
+      background: var(--error);
+      border-radius: 50%;
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    .voice-processing {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 22px 16px;
+      text-align: center;
+    }
+
+    .voice-wave {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+      height: 28px;
+      margin-bottom: 14px;
+    }
+
+    .voice-bar {
+      width: 3px;
+      background: var(--accent);
+      border-radius: 2px;
+      animation: wave 1.2s ease-in-out infinite;
+    }
+
+    .voice-bar:nth-child(1) { height: 20%; animation-delay: 0s; }
+    .voice-bar:nth-child(2) { height: 45%; animation-delay: 0.1s; }
+    .voice-bar:nth-child(3) { height: 70%; animation-delay: 0.2s; }
+    .voice-bar:nth-child(4) { height: 100%; animation-delay: 0.3s; }
+    .voice-bar:nth-child(5) { height: 70%; animation-delay: 0.4s; }
+    .voice-bar:nth-child(6) { height: 45%; animation-delay: 0.5s; }
+    .voice-bar:nth-child(7) { height: 85%; animation-delay: 0.6s; }
+    .voice-bar:nth-child(8) { height: 55%; animation-delay: 0.7s; }
+    .voice-bar:nth-child(9) { height: 30%; animation-delay: 0.8s; }
+    .voice-bar:nth-child(10) { height: 60%; animation-delay: 0.9s; }
+
+    @keyframes wave {
+      0%, 100% { transform: scaleY(0.6); }
+      50% { transform: scaleY(1); }
+    }
+
+    .chat-bubble {
+      background: var(--bg-input);
+      color: var(--text-secondary);
+      padding: 9px 12px;
+      border-radius: var(--radius-sm);
+      border-bottom-left-radius: 3px;
+      font-size: 13px;
+      margin-bottom: 6px;
+      max-width: 85%;
+      line-height: 1.5;
+    }
+
+    .chat-bubble.ai {
+      background: var(--accent);
+      color: #fff;
+      border-bottom-left-radius: var(--radius-sm);
+      border-bottom-right-radius: 3px;
+      margin-left: auto;
+      font-weight: 500;
+    }
+
+    .voice-chat-container {
+      max-height: 160px;
+      overflow-y: auto;
+      padding: 4px 0;
+    }
+
+    /* ─── Manual Toggle ─── */
+    #manualToggle {
+      cursor: pointer;
+      user-select: none;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    #manualToggle::after {
+      content: '▾';
+      font-size: 10px;
+      transition: transform var(--transition);
+      color: var(--text-muted);
+    }
+
+    #manualToggle.expanded::after {
+      transform: rotate(180deg);
+    }
+
+    /* ─── QR Section ─── */
+    .qr-section {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .qr-container {
+      background: var(--bg-input);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .qr-code {
+      width: 150px;
+      height: 150px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .qr-pattern {
+      width: 110px;
+      height: 110px;
+      background-image:
+        linear-gradient(90deg, var(--text-muted) 1.5px, transparent 1.5px),
+        linear-gradient(var(--text-muted) 1.5px, transparent 1.5px);
+      background-size: 12px 12px;
+      position: relative;
+      opacity: 0.3;
+    }
+
+    .qr-pattern::before,
+    .qr-pattern::after {
+      content: '';
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border: 3px solid var(--accent);
+      background: var(--bg);
+      border-radius: 2px;
+    }
+
+    .qr-pattern::before { top: 4px; left: 4px; }
+    .qr-pattern::after { top: 4px; right: 4px; }
+
+    .qr-corner {
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border: 3px solid var(--accent);
+      background: var(--bg);
+      bottom: 4px;
+      left: 4px;
+      border-radius: 2px;
+    }
+
+    .qr-scanned .qr-pattern { opacity: 0.15; }
+
+    .qr-scanned::after {
+      content: 'SCANNED';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: var(--success);
+      color: #fff;
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .timer-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .timer-text {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .timer-bar {
+      width: 140px;
+      height: 4px;
+      background: var(--border-light);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .timer-progress {
+      height: 100%;
+      background: var(--accent);
+      border-radius: 2px;
+      transition: width 1s linear;
+    }
+
+    .timer-countdown {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--accent);
+      font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+
+    .scan-status {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center;
+      font-weight: 500;
+    }
+
+    .scan-status.scanning { color: var(--accent); }
+    .scan-status.complete { color: var(--success); }
+
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+
+    /* ─── Auth View ─── */
+    .auth-header {
+      background: var(--bg);
+      padding: 18px 20px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .auth-tabs {
+      display: flex;
+      background: var(--bg-muted);
+      margin: 14px 16px 0;
+      padding: 3px;
+      border-radius: 10px;
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: 9px 6px;
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+    }
+
+    .auth-tab.active {
+      background: var(--bg);
+      color: var(--text-primary);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    .auth-tab svg {
+      width: 14px;
+      height: 14px;
+    }
+
+    .auth-body {
+      padding: 16px 20px 20px;
+    }
+
+    .auth-btn-google {
+      width: 100%;
+      padding: 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all var(--transition);
+      font-family: inherit;
+    }
+
+    .auth-btn-google:hover {
+      background: var(--bg-hover);
+      border-color: var(--border);
+    }
+
+    .auth-btn-google:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+
+    .auth-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 16px 0;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    .auth-divider::before, .auth-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-light);
+    }
+
+    .auth-field {
+      margin-bottom: 14px;
+    }
+
+    .auth-field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+
+    .auth-field input {
+      width: 100%;
+      padding: 11px 12px;
+      border: 1px solid var(--border);
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-family: inherit;
+      background: var(--bg-input);
+      color: var(--text-primary);
+      transition: all var(--transition);
+    }
+
+    .auth-field input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-bg);
+      background: var(--bg);
+    }
+
+    .auth-field input::placeholder {
+      color: var(--text-muted);
+    }
+
+    .auth-btn-primary {
+      width: 100%;
+      padding: 13px;
+      background: var(--text-primary);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all var(--transition);
+      font-family: inherit;
+      margin-top: 2px;
+    }
+
+    .auth-btn-primary:hover {
+      opacity: .9;
+    }
+
+    .auth-btn-primary:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+
+    .auth-btn-primary .btn-spin {
+      display: inline-block;
+      width: 15px;
+      height: 15px;
+      border: 2px solid rgba(255,255,255,.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
+    .auth-msg {
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: var(--radius-sm);
+      font-size: 12px;
+      font-weight: 500;
+      display: none;
+      line-height: 1.5;
+    }
+
+    .auth-msg.show { display: block; }
+    .auth-msg.error {
+      background: var(--error-light);
+      border: 1px solid var(--error-border);
+      color: #b91c1c;
+    }
+    .auth-msg.success {
+      background: var(--success-light);
+      border: 1px solid var(--success-border);
+      color: #15803d;
+    }
+
+    .auth-switch {
+      margin-top: 18px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .auth-switch a {
+      color: var(--text-primary);
+      font-weight: 700;
+      text-decoration: none;
+      margin-left: 4px;
+    }
+
+    .auth-switch a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════════
+       AUTH SCREEN — shown when not logged in
+       ═══════════════════════════════════════════════════════════════════════════ -->
+  <div id="authView" style="display:none;">
+    <div class="auth-header">
+      <div class="logo-icon">
+        <img src="exicon.svg" alt="DIU IntelliMarks" style="width:20px;height:20px;">
+      </div>
+      <div class="logo-text">DIU IntelliMarks</div>
+    </div>
+
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="authTabLogin" type="button">Login</button>
+      <button class="auth-tab" id="authTabSignup" type="button">Sign Up</button>
+    </div>
+
+    <div class="auth-body">
+
+      <!-- Google -->
+      <button class="auth-btn-google" id="authGoogleBtn" type="button">
+        <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.54-.19-2.27H12v4.51h6.47a5.57 5.57 0 0 1-2.4 3.58v3h3.86c2.26-2.09 3.56-5.17 3.56-8.82z"/><path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.86-3c-1.08.72-2.45 1.16-4.07 1.16-3.13 0-5.78-2.11-6.73-4.96H1.29v3.09A11.99 11.99 0 0 0 12 24z"/><path fill="#FBBC05" d="M5.27 14.29A7.2 7.2 0 0 1 4.89 12c0-.8.14-1.57.38-2.29V6.62H1.29a11.99 11.99 0 0 0 0 10.76l3.98-3.09z"/><path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.31 0 3.26 2.69 1.29 6.62l3.98 3.09C6.22 6.86 8.87 4.75 12 4.75z"/></svg>
+        Continue with Google
+      </button>
+
+      <div class="auth-divider"><span>OR</span></div>
+
+      <!-- Email / Password form -->
+      <div class="auth-field">
+        <label>Email address</label>
+        <input id="authEmail" type="email" placeholder="Enter your email address" autocomplete="email">
+      </div>
+      <div class="auth-field" style="position:relative;">
+        <label style="display:flex;justify-content:space-between;">Password
+          <a href="#" id="authForgotPass" style="font-size:11px;color:var(--text-muted);text-decoration:none;font-weight:500;">Forgot password?</a>
+        </label>
+        <input id="authPass" type="password" placeholder="Enter your password" autocomplete="current-password">
+      </div>
+      <div class="auth-field" id="authNameField" style="display:none;">
+        <label>Full Name</label>
+        <input id="authName" type="text" placeholder="Your name" autocomplete="name">
+      </div>
+
+      <button class="auth-btn-primary" id="authSubmitBtn" type="button">Log In</button>
+
+      <div id="authMsg" class="auth-msg"></div>
+
+      <div class="auth-switch">
+        <span id="authSwitchText">Don't have an account yet?</span>
+        <a href="#" id="authSwitchLink">Sign up</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════════════════════════════════
+       MAIN APP — shown when logged in
+       ═══════════════════════════════════════════════════════════════════════════ -->
+  <div id="mainView" style="display:none;">
+  <div class="header">
+    <div class="logo-icon">
+      <img src="exicon.svg" alt="DIU IntelliMarks" style="width: 20px; height: 20px;">
+    </div>
+    <div class="logo-text">DIU IntelliMarks</div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:8px;">
+      <span id="authUserEmail" style="font-size:11px;color:var(--text-muted);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title=""></span>
+      <button id="logoutBtn" style="background:none;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-size:11px;font-weight:600;color:var(--text-secondary);cursor:pointer;font-family:inherit;">Logout</button>
+    </div>
+  </div>
+  
+  <div class="tab-container">
+    <button class="tab active" data-tab="audio">Audio</button>
+    <button class="tab" data-tab="upload">Upload Images</button>
+    <button class="tab" data-tab="qrscan">QR Scan</button>
+  </div>
+  
+  <div class="content">
+    <div id="audio" class="tab-content active">
+      <div class="section-title">Voice with AI</div>
+      <div class="section-subtitle">Record marks and let AI process them</div>
+      
+      <div class="card">
+        <div class="card-title">Assessment Type</div>
+        <select id="voiceAssessmentType">
+          <option value="">Choose assessment...</option>
+          <option value="quiz1">Quiz 1 (/15)</option>
+          <option value="quiz2">Quiz 2 (/15)</option>
+          <option value="quiz3">Quiz 3 (/15)</option>
+          <option value="assignment">Assignment (/5)</option>
+          <option value="midterm">Midterm (/25)</option>
+          <option value="final">Final (/40)</option>
+        </select>
+      </div>
+      
+      <div class="card" id="voiceRecordCard">
+        <div class="card-title">Voice Recording</div>
+        <div class="voice-section">
+          <button class="voice-record-btn" id="voiceRecordBtn">
+            <span class="voice-icon">●</span>
+            <span class="voice-text">Voice with AI</span>
+            <span class="voice-subtext">Click to start recording</span>
+          </button>
+          <div class="recording-indicator hidden" id="recordingIndicator">
+            <span class="recording-dot"></span>
+            <span>Recording...</span>
+          </div>
+          <div id="voiceStatus" class="status" style="margin-top: 8px;"></div>
+        </div>
+      </div>
+      
+      <div class="card hidden" id="voiceProcessingCard">
+        <div class="voice-processing">
+          <div class="voice-wave">
+            <div class="voice-bar"></div>
+            <div class="voice-bar"></div>
+            <div class="voice-bar"></div>
+            <div class="voice-bar"></div>
+            <div class="voice-bar"></div>
+            <div class="voice-bar"></div>
+            <div class="voice-bar"></div>
+            <div class="voice-bar"></div>
+            <div class="voice-bar"></div>
+            <div class="voice-bar"></div>
+          </div>
+          <div class="processing-text">AI is listening and analyzing...</div>
+        </div>
+      </div>
+      
+      <div class="card hidden" id="voiceChatCard">
+        <div class="card-title">Voice Chat with AI</div>
+        <div class="voice-chat-container" id="voiceChatContainer"></div>
+      </div>
+      
+      <div class="card hidden" id="voiceResultsCard">
+        <div class="ai-results-title">AI Analysis Results</div>
+        <div class="ai-results">
+          <div class="ai-results-content" id="voiceAiResultsContent"></div>
+        </div>
+        <div class="mismatch-section hidden" id="voiceMismatchSection">
+          <div class="mismatch-title">Mismatched IDs (Not found in portal)</div>
+          <div id="voiceMismatchList"></div>
+        </div>
+        <button class="btn btn-success" id="voiceFillAIBtn" style="margin-top: 14px;">Auto-Fill Matching Results</button>
+        <button class="btn btn-secondary" id="voiceResetBtn" style="margin-top: 8px;">Record Again</button>
+      </div>
+      
+      <div class="card" style="margin-top: 16px;">
+        <div class="card-title" style="cursor: pointer;" id="manualToggle">Manual Entry (Click to expand)</div>
+        <div id="manualSection" style="display: none; margin-top: 12px;">
+          <div style="margin-bottom: 10px;">
+            <select id="columnSelect" style="margin-bottom: 10px;">
+              <option value="quiz1">Quiz 1 (/15)</option>
+              <option value="quiz2">Quiz 2 (/15)</option>
+              <option value="quiz3">Quiz 3 (/15)</option>
+              <option value="attendance">Attendance (/7)</option>
+              <option value="presentation">Presentation (/8)</option>
+              <option value="assignment">Assignment (/5)</option>
+              <option value="midterm">Midterm (/25)</option>
+              <option value="final">Final (/40)</option>
+            </select>
+          </div>
+          <textarea id="dataInput" class="data-input" placeholder="232-15-012: 10&#10;232-15-019: 12&#10;232-15-028: 8"></textarea>
+          <p class="hint">Format: StudentID: Score (one per line)</p>
+          <button id="saveBtn" class="btn btn-primary" style="margin-top: 12px;">Save Data</button>
+          <div id="saveStatus" class="status"></div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-title">Saved Data</div>
+        <div id="savedDataPreview" class="saved-data">
+          <div class="empty-state">No data saved yet</div>
+        </div>
+      </div>
+      
+      <div class="card">
+        <div class="card-title">Quick Actions</div>
+        <button id="fillBtn" class="btn btn-success" style="margin-bottom: 8px;">Auto-Fill on Page</button>
+        <div class="btn-group">
+          <button id="clearBtn" class="btn btn-secondary">Clear All</button>
+          <button id="exportBtn" class="btn btn-secondary">Export</button>
+        </div>
+        <div id="actionStatus" class="status"></div>
+      </div>
+    </div>
+    
+    <div id="upload" class="tab-content">
+      <div class="upload-section">
+        <div class="card">
+          <div class="card-title">Assessment Type</div>
+          <select id="assessmentType">
+            <option value="">Choose assessment...</option>
+            <option value="quiz1">Quiz 1 (/15)</option>
+            <option value="quiz2">Quiz 2 (/15)</option>
+            <option value="quiz3">Quiz 3 (/15)</option>
+            <option value="midterm">Midterm (/25)</option>
+            <option value="final">Final (/40)</option>
+          </select>
+        </div>
+        
+        <div class="card" id="uploadCard">
+          <div class="upload-dropzone" id="uploadDropzone">
+            <div class="upload-icon">↑</div>
+            <div class="upload-text">Drag & drop mark sheets</div>
+            <div class="upload-subtext">(Images / PDF)</div>
+            <div class="upload-subtext" style="margin-top: 10px; color: var(--accent); font-weight: 600;">or click to browse files</div>
+            <div class="upload-formats">Supports: PNG · JPG · JPEG · WEBP · PDF</div>
+            <input type="file" id="fileInput" multiple accept=".png,.jpg,.jpeg,.webp,.pdf" style="display: none;">
+          </div>
+        </div>
+        
+        <div class="card hidden" id="fileListCard">
+          <div class="file-header">
+            <span class="file-count" id="fileCount">Uploaded Files (0)</span>
+            <button class="clear-all" id="clearAllFiles">Clear All</button>
+          </div>
+          <div class="file-list" id="fileList"></div>
+          <button class="btn btn-process" id="processBtn" style="margin-top: 12px;">Process with AI</button>
+        </div>
+        
+        <div class="card hidden" id="processingCard">
+          <div class="processing">
+            <div class="spinner"></div>
+            <div class="processing-text">AI is analysing mark sheets...</div>
+          </div>
+        </div>
+        
+        <div class="card hidden" id="resultsCard">
+          <div class="ai-results-title">AI Analysis Results</div>
+          <div class="ai-results">
+            <div class="ai-results-content" id="aiResultsContent"></div>
+          </div>
+          <div class="mismatch-section hidden" id="mismatchSection">
+            <div class="mismatch-title">Mismatched IDs (Not found in portal)</div>
+            <div id="mismatchList"></div>
+          </div>
+          <button class="btn btn-success" id="fillAIBtn" style="margin-top: 14px;">Auto-Fill Matching Results</button>
+          <button class="btn btn-secondary" id="resetUploadBtn" style="margin-top: 8px;">Upload New Files</button>
+        </div>
+        
+        <div id="uploadStatus" class="status"></div>
+      </div>
+    </div>
+    
+    <div id="qrscan" class="tab-content">
+      <div class="section-title">Mobile Upload</div>
+      <div class="section-subtitle">Generate a QR code — scan with phone to upload mark sheets</div>
+
+      <div class="card">
+        <div class="card-title">Assessment Type</div>
+        <select id="qrAssessmentType">
+          <option value="">Choose assessment...</option>
+          <option value="quiz1">Quiz 1 (/15)</option>
+          <option value="quiz2">Quiz 2 (/15)</option>
+          <option value="quiz3">Quiz 3 (/15)</option>
+          <option value="assignment">Assignment (/5)</option>
+          <option value="midterm">Midterm (/25)</option>
+          <option value="final">Final (/40)</option>
+        </select>
+      </div>
+
+      <div class="card" id="qrDisplayCard">
+        <div class="card-title">Mobile Upload Link</div>
+        <div class="qr-section">
+          <div class="qr-container">
+            <div class="qr-code" id="qrCode">
+              <img id="qrImage" src="" alt="QR Code" style="width:130px;height:130px;object-fit:contain;border-radius:var(--radius-sm);display:none;">
+              <div id="qrPlaceholder" style="text-align:center;padding:14px;color:var(--text-muted);font-size:11px;line-height:1.6;">
+                Select assessment<br>then click<br><strong>Generate QR</strong>
+              </div>
+            </div>
+            <div class="scan-status" id="scanStatus">No session active</div>
+          </div>
+
+          <p id="qrUrlText" style="font-size:10px;color:var(--text-muted);word-break:break-all;text-align:center;padding:0 8px;display:none;"></p>
+
+          <div id="qrImageCountCard" class="hidden" style="width:100%;text-align:center;padding:6px 0;">
+            <div id="qrImageCountText" style="font-size:12px;font-weight:600;color:var(--text-secondary);margin-bottom:6px;">No images uploaded yet</div>
+            <button class="btn btn-secondary" id="refreshQrBtn" style="margin-bottom:0;">↻ Refresh Image Count</button>
+          </div>
+
+          <button class="btn btn-primary" id="generateQrBtn" style="margin-top:2px;">Generate QR Code</button>
+          <button class="btn btn-success hidden" id="processQrImagesBtn" style="margin-top:6px;">Process Uploaded Images</button>
+        </div>
+      </div>
+
+      <div class="card hidden" id="qrProcessingCard">
+        <div class="processing">
+          <div class="spinner"></div>
+          <div class="processing-text">AI is analysing uploaded mark sheets…</div>
+        </div>
+      </div>
+
+      <div class="card hidden" id="qrResultsCard">
+        <div class="ai-results-title">AI Analysis Results</div>
+        <div class="ai-results">
+          <div class="ai-results-content" id="qrAiResultsContent"></div>
+        </div>
+        <div class="mismatch-section hidden" id="qrMismatchSection">
+          <div class="mismatch-title">Mismatched IDs (Not found in portal)</div>
+          <div id="qrMismatchList"></div>
+        </div>
+        <button class="btn btn-success" id="qrFillAIBtn" style="margin-top: 14px;">Auto-Fill Matching Results</button>
+        <button class="btn btn-secondary" id="qrResetBtn" style="margin-top: 8px;">New Session</button>
+      </div>
+
+      <div id="qrStatus" class="status"></div>
+    </div>
+  </div>
+  </div> <!-- /mainView -->
+  
+  <script src="popup.js"></script>
+</body>
+</html>

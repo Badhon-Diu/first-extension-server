@@ -13,6 +13,10 @@ const audioRouter   = require('./src/routes/audio.route');
 const imageRouter   = require('./src/routes/image.route');
 const uploadRouter  = require('./src/routes/upload.route');
 const sessionRouter = require('./src/routes/session.route');
+const authRouter    = require('./src/routes/auth.route');
+const adminRouter   = require('./src/routes/admin.route');
+
+const { requireAuth } = require('./src/middleware/auth');
 
 const app = express();
 
@@ -37,6 +41,9 @@ app.use((req, res, next) => {
 app.use(cors());
 app.use(express.json({ limit: '50mb' })); // Large limit for base64 audio payloads
 
+// Static assets (logo, etc.)
+app.use(express.static(path.join(__dirname, 'public')));
+
 // ── Routes ───────────────────────────────────────────────────────────────────
 
 app.use('/api/health',         healthRouter);
@@ -47,10 +54,16 @@ app.get('/api/network-info', (_req, res) => {
   const lanIp = getLanIp();
   res.json({ lanIp, port: CONFIG.port, baseUrl: `http://${lanIp}:${CONFIG.port}` });
 });
-app.use('/api/analyze-audio',  audioRouter);
-app.use('/api/analyze-images', imageRouter);
+
+// Auth & admin
+app.use('/', authRouter);      // GET /login  |  GET/POST /api/auth/*
+app.use('/admin', adminRouter); // GET /admin  |  GET /api/admin/users  |  DELETE /api/admin/users/:uid
+
+// Protected extension APIs — require "Authorization: Bearer <firebase-token>"
+app.use('/api/analyze-audio',  requireAuth, audioRouter);
+app.use('/api/analyze-images', requireAuth, imageRouter);
 app.use('/upload',             uploadRouter);   // GET /:uuid  |  POST /:uuid/images
-app.use('/api/session',        sessionRouter);  // GET /:uuid  |  POST /:uuid/analyze
+app.use('/api/session',        requireAuth, sessionRouter);  // GET /:uuid  |  POST /:uuid/analyze
 
 // ── Global error handler ─────────────────────────────────────────────────────
 

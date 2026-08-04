@@ -1,0 +1,65 @@
+PART 1: INTRODUCTION
+
+Hello and welcome. Today I'm going to show you DIU IntelliMarks, an AI-powered Chrome extension built for teachers at Daffodil International University. This extension allows you to enter student marks using Voice, Image Upload, and QR Code scanning, making the entire process fast, accurate, and hassle-free.
+
+The core features are Voice with AI, Upload Images where you can upload mark sheet photos or PDFs, QR Scan for uploading mark sheets from your mobile phone, and Manual Entry. Finally, with a single click, you can Auto-Fill everything directly into the DIU marks portal.
+
+Let's go through everything step by step.
+
+PART 2: INSTALLATION
+
+First, we need to install the extension. Open your Chrome browser and type in the address bar, chrome://extensions/. Then enable Developer mode using the toggle in the top right corner. Click Load Unpacked and select the folder containing the extension files. That's it. The extension is installed. You'll now see a new icon in your toolbar, a circle with the letter i inside. Click on it to open the extension popup.
+
+PART 3: POPUP UI OVERVIEW
+
+When you click the icon, this popup opens. At the top, you'll see three tabs, Audio, Upload Images, and QR Scan. Below that, there's the Manual Entry section and a list of saved data. First, you need to select an Assessment Type. The options are Quiz 1, Quiz 2, Quiz 3, Assignment, Midterm, and Final, each with their own marking scheme. Just pick whichever you need. Now let's look at each feature in detail.
+
+PART 4: FEATURE 1, VOICE WITH AI
+
+The first feature is Voice with AI. With this, you can simply speak the marks and AI will process them. It's that easy. Start by selecting your Assessment Type. Let's pick Quiz 1. Now click this Voice with AI button. If Chrome asks for microphone access, click Allow. Recording has started. Now clearly say each student's ID and their marks. For example, 232-15-047 got 12, 232-15-019 got 10, 232-15-091 got 14. When you're done, click the same button to stop recording. Now the AI will analyze your voice. You can see AI is listening and analyzing on screen. During this time, our backend server processes your audio through Whisper AI and extracts student IDs and marks from your speech. The results are here. You'll see green colored Matched IDs, students found in the portal with their extracted marks. Any IDs that didn't match will appear in red, so you can review them manually. Now click Auto-Fill Matching Results. Watch this. The marks are being entered into each student's cell on the portal in real time. Each cell shows a blue flash animation so you can see exactly which cells were filled.
+
+How does AI extract marks from voice? Our backend uses OpenAI's Whisper model to convert your speech into text. Then it uses regular expressions and AI parsing to extract student IDs and marks. You can speak in English or Bengali. Both work perfectly.
+
+PART 5: FEATURE 2, UPLOAD IMAGES
+
+The second feature is Upload Images. If you have mark sheets as images or PDF files, you can upload them here and AI will automatically extract the marks. This feature is extremely useful when you have handwritten or printed mark sheets. First, select your Assessment Type. Let's pick Midterm. Now click on this dashed dropzone box or simply drag and drop your mark sheet images here. Supported formats are PNG, JPG, JPEG, WEBP, and PDF. After uploading, you can see a list of files with their names and sizes. You can remove any file if needed. Now click Process with AI. AI is analyzing your mark sheets. Our backend server processes your images through a Vision AI model. It performs text recognition and pattern matching to extract each student's ID and marks from the images. When the results come in, you'll again see how many IDs matched and how many didn't. Click Auto-Fill Matching Results and the marks will be entered into the portal. An important detail, the AI fetches the current student list from your open portal page. So make sure the marks portal page is open first. Then the matching happens on three levels, exact ID match, digits-only ID match ignoring hyphens, and even student name matching.
+
+PART 6: FEATURE 3, QR SCAN OR MOBILE UPLOAD
+
+The third feature is QR Scan or Mobile Upload. This is a very unique feature. Imagine you have mark sheet photos on your mobile phone. Instead of transferring them to your computer, you can upload them directly from your phone. First, select your Assessment Type. Then click Generate QR Code. A QR code will be generated with a URL below it. Scan this QR code using your mobile phone. After scanning, a web page will open on your phone. From there, you can upload your mark sheet images directly. Once uploaded, click Refresh Image Count here to see how many images have been uploaded from your phone. When all images are uploaded, click Process Uploaded Images. Now the AI will analyze the images uploaded from your mobile. The backend tracks these files using a session UUID and processes them through the Vision AI model. Once results appear, click Auto-Fill Matching Results and the marks are entered into the portal with one click. The QR Scan feature works both on local networks and on the live server. If you are on a local network, the QR code uses your LAN IP so your phone can connect on the same network. If you are on the live server, it uses the Render URL directly.
+
+PART 7: MANUAL ENTRY AND SAVED DATA
+
+Now let's look at the Manual Entry option. It's located at the bottom of the Audio tab. Click on Manual Entry to expand it. Here you can type student IDs and marks directly. The format is Student ID colon Score, one per line. For example, 232-15-047 colon 12, 232-15-019 colon 10. You can also use 16-digit barcode IDs. Click Save Data and it will be stored in Chrome's local storage. In the Saved Data section below, you can see all your saved data, which column has how many student records. Below that, there are more options. Auto-Fill on Page fills everything into the portal in one click. Clear All removes all saved data. Export downloads your data as a JSON file for backup or future use.
+
+PART 8: AUTO-FILL SYSTEM, HOW IT WORKS
+
+Let me explain how the Auto-Fill system works in detail. When you click the Auto-Fill button, the popup script sends your data to the content script. The content script then locates the marks table on the DIU portal page. It checks each row of the table. When it finds a cell containing a DIU format ID like 232-15-047 or a 16-digit ID, it knows this is the marks table. Then it performs three levels of matching. First, exact ID match. Second, digits-only match, whether hyphens are present or not. Third, student name match. Each cell being filled shows a blue flash animation so you can see in real time which cells are being populated. The content script receives the message from the popup script and calls the fill marks data function. It goes through every cell in the table, finds number-type input fields, and sets the value. It dispatches focus, input, and change events so the portal's own JavaScript detects the data correctly.
+
+PART 9: DATA MANAGEMENT, STORAGE AND EXPORT
+
+Let's talk about data management. This extension uses Chrome's local storage API to keep your data saved. Each column stores data separately, like marks underscore quiz 1, marks underscore midterm, and so on. Once you save data, it stays in Chrome's local storage. So even if you close the extension and reopen it later, your data will still be there. Clicking the Export button downloads all your data as a JSON file. You can keep this as a backup or re-import it later. The Clear All button removes all data and resets every result card back to its initial state.
+
+PART 10: BACKEND SERVER AND API
+
+Behind the entire system, there is a backend server. It is currently hosted on Render. The server is built with Express.js and has the following API endpoints. First, slash API slash analyze audio, which processes voice audio through Whisper AI to extract transcripts and marks. Second, slash API slash analyze images, which extracts marks from uploaded images or PDFs using Vision AI. Third, slash API slash session slash UUID, which manages QR upload sessions. Fourth, slash API slash network info, which returns local network information. The key thing is, if you are working on a local network, you can change the API base URL in the popup script to your local IP address so the QR code works on your mobile phone.
+
+PART 11: PROJECT STRUCTURE OVERVIEW
+
+Let's quickly look at the project file structure. Manifest dot JSON is the extension configuration file. It defines permissions, icons, and content scripts. Popup dot HTML is the user interface, clean and modern design. Popup dot JS is all the popup logic, including tab switching, API calls, data management, and messaging for auto-fill. Content dot JS gets injected into the university's marks portal. It locates the table, extracts IDs, and fills marks. Content dot CSS contains styles for the floating button and flash animations. This extension uses Manifest V3, the latest Chrome extension standard.
+
+PART 12: SMART MATCHING DETAILED EXPLANATION
+
+One of the most powerful features is the smart ID matching system. When AI returns data, the IDs don't always match the portal IDs exactly. That's where the match results to students function comes in. It matches on four levels. First, exact ID match. For example, if the portal has 232-15-047 and AI also returns 232-15-047. Second, digits-only match. Whether AI returns 23215047 or 232-15-047, both will match. Third, exact name match, matching by the student's full name. Fourth, partial name match. If AI returns only a first name or a truncated name, it still attempts to match. Any IDs that don't match are shown in the Mismatched IDs section, highlighted in red. You can review these and correct them manually.
+
+PART 13: REAL LIFE USE CASES
+
+Now let's look at some real-life scenarios. Scenario 1, you have a printed mark sheet in your hand. Go to Upload Images tab, take photos or upload PDFs, let AI extract marks, then Auto-Fill. Scenario 2, you have the mark sheet in front of you and want to read it out. Use Voice with AI, say 232-15-047 got 12, then Auto-Fill. Scenario 3, your mark sheet photos are on your phone, not on your computer. Go to QR Scan tab, generate a QR code, scan with your phone and upload images, then process and Auto-Fill. Scenario 4, you need to enter data for multiple columns. Save data for each column separately and use Auto-Fill for each one. The extension keeps all data stored individually in Chrome's local storage.
+
+PART 14: CONCLUSION
+
+That's how DIU IntelliMarks makes your mark entry process faster, easier, and more accurate. With three AI-powered features, Voice, Image Recognition, and QR Scan, you can handle any situation and enter marks effortlessly. This project is completely open source and available on GitHub. You are welcome to contribute, request features, or report bugs. Thank you for watching. Have a great day.
+
+BONUS: TROUBLESHOOTING TIPS
+
+Here are some common issues and solutions. One, if you see Content script not found error, first open your DIU marks portal page, then use the extension. Two, if the QR code doesn't work, check the API base URL in the popup script. If you are on a local network, update it with your local IP. Three, if the microphone doesn't work, check Chrome settings to make sure microphone permission is enabled. Four, if marks aren't filling correctly, check the column mapping in the popup script and make sure the column indices match your portal table.

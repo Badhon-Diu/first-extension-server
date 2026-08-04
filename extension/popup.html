@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      width: 340px;
+      padding: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-size: 14px;
+      color: #111827;
+      background: #f8fafc;
+    }
+    h1 {
+      font-size: 16px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+    .sub {
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 16px;
+    }
+    .status {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      background: #f3f4f6;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-bottom: 8px;
+      transition: opacity .15s;
+    }
+    button:hover { opacity: .9; }
+    button:disabled { opacity: .5; cursor: not-allowed; }
+    #loginBtn {
+      background: #22c55e;
+      color: #fff;
+    }
+    #logoutBtn {
+      background: #fee2e2;
+      color: #dc2626;
+      display: none;
+    }
+    #testApiBtn {
+      background: #eff6ff;
+      color: #1e40af;
+      border: 1.5px solid #bfdbfe;
+      display: none;
+    }
+    #result {
+      display: none;
+      margin-top: 12px;
+      padding: 10px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-family: ui-monospace, Menlo, monospace;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 200px;
+      overflow: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>DIU IntelliMarks</h1>
+  <div class="sub">Mark Extraction Extension</div>
+
+  <div class="status" id="authStatus">Checking…</div>
+
+  <button id="loginBtn">Sign in with Google</button>
+  <button id="logoutBtn">Log out</button>
+  <button id="testApiBtn">Test API Call</button>
+
+  <div id="result"></div>
+
+  <script src="auth-manager.js"></script>
+  <script src="popup-example.js"></script>
+</body>
+</html>
