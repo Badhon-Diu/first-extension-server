@@ -13,6 +13,7 @@ yarn-error.log*
 uploads/
 images/
 tmp/
+DIU-Ai-Extension-Final-main/
 
 # Logs
 logs/
