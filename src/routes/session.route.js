@@ -8,7 +8,7 @@ const { analyzeAllImages } = require('../services/image.service');
 
 const router = Router();
 
-const IMAGE_EXTS = /\.(jpe?g|png|webp|gif)$/i;
+const IMAGE_EXTS = /\.(jpe?g|png|webp|gif|heic|heif|bmp)$/i;
 
 const MIME = {
   '.jpg':  'image/jpeg',
@@ -16,6 +16,9 @@ const MIME = {
   '.png':  'image/png',
   '.webp': 'image/webp',
   '.gif':  'image/gif',
+  '.heic': 'image/heic',
+  '.heif': 'image/heif',
+  '.bmp':  'image/bmp',
 };
 
 function listSessionFiles(uuid) {

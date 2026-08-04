@@ -68,7 +68,7 @@ router.post('/:uuid/images', (req, res) => {
     const uploaded = req.files ? req.files.length : 0;
     const sessionDir = path.join(SESSIONS_DIR, uuid);
     const total = fs.existsSync(sessionDir)
-      ? fs.readdirSync(sessionDir).filter(f => /\.(jpe?g|png|webp|gif)$/i.test(f)).length
+      ? fs.readdirSync(sessionDir).filter(f => /\.(jpe?g|png|webp|gif|heic|heif|bmp)$/i.test(f)).length
       : 0;
 
     console.log(`[Upload] ${uuid}: +${uploaded} images (total ${total})`);

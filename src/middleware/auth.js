@@ -28,7 +28,9 @@ function wantsHtml(req) {
  */
 async function requireAuth(req, res, next) {
   if (!isFirebaseReady()) {
-    const msg = 'Authentication is not configured. Server operator must set Firebase service account.';
+    const detail = getFirebaseError();
+    const msg = 'Authentication is not configured' +
+      (detail ? ' (' + detail + ')' : '. Server operator must set Firebase service account.');
     if (wantsHtml(req)) return res.redirect('/login');
     return res.status(503).json({ error: msg });
   }

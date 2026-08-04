@@ -311,27 +311,42 @@ document.addEventListener('DOMContentLoaded', function() {
   // ── Authenticated fetch helper ──────────────────────────────────────────────
   async function authFetch(url, options = {}) {
     if (!authToken) throw new Error('Not authenticated');
-    const headers = { ...(options.headers || {}), 'Authorization': 'Bearer ' + authToken };
-    const resp = await fetch(url, { ...options, headers });
 
-    // If 401, try refreshing the token once
-    if (resp.status === 401 && refreshToken) {
-      try {
-        const data = await fbRefreshToken(refreshToken);
-        await saveAuth(data);
-        authToken    = data.idToken;
-        refreshToken = data.refreshToken;
-        tokenExpiry  = Date.now() + parseInt(data.expiresIn || '3600') * 1000;
-        scheduleTokenRefresh();
-        // Retry the original request with the new token
-        headers['Authorization'] = 'Bearer ' + authToken;
-        return fetch(url, { ...options, headers });
-      } catch (e) {
-        showAuthView();
-        throw new Error('Session expired. Please log in again.');
+    // Hard cap so the UI never hangs forever (Render cold starts can take a while)
+    const controller = new AbortController();
+    const timeoutId  = setTimeout(() => controller.abort(), 180000); // 3 minutes
+    const signal     = options.signal || controller.signal;
+
+    try {
+      const headers = { ...(options.headers || {}), 'Authorization': 'Bearer ' + authToken };
+      const resp = await fetch(url, { ...options, headers, signal });
+
+      // If 401, try refreshing the token once
+      if (resp.status === 401 && refreshToken) {
+        try {
+          const data = await fbRefreshToken(refreshToken);
+          await saveAuth(data);
+          authToken    = data.idToken;
+          refreshToken = data.refreshToken;
+          tokenExpiry  = Date.now() + parseInt(data.expiresIn || '3600') * 1000;
+          scheduleTokenRefresh();
+          // Retry the original request with the new token
+          headers['Authorization'] = 'Bearer ' + authToken;
+          return fetch(url, { ...options, headers, signal });
+        } catch (e) {
+          showAuthView();
+          throw new Error('Session expired. Please log in again.');
+        }
       }
+      return resp;
+    } catch (err) {
+      if (err && (err.name === 'AbortError' || err.name === 'TimeoutError')) {
+        throw new Error('Request timed out — the server is waking up or unreachable. Please try again.');
+      }
+      throw err;
+    } finally {
+      clearTimeout(timeoutId);
     }
-    return resp;
   }
 
   // ==================== INIT — check auth state on load ====================
@@ -1002,6 +1017,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
       try {
         const resp = await authFetch(`${API_BASE_URL}/api/session/${currentQrUuid}`);
+        if (!resp.ok) {
+          const e = await resp.json().catch(() => ({}));
+          throw new Error(e.error || 'Session check failed (status ' + resp.status + ')');
+        }
         const data = await resp.json();
         const count = data.count || 0;
 

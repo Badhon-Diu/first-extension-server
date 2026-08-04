@@ -7,6 +7,27 @@ const admin = require('firebase-admin');
 let firebaseApp = null;
 let initError   = null;
 
+/**
+ * Parse the FIREBASE_SERVICE_ACCOUNT env value.
+ * Accepts EITHER the raw service-account JSON (simplest to paste into Render)
+ * OR the JSON base64-encoded. Falls back to a clear error otherwise.
+ */
+function parseServiceAccount(value) {
+  const trimmed = String(value || '').trim();
+  if (!trimmed) return null;
+
+  try {
+    return JSON.parse(trimmed);
+  } catch (_) {
+    // Not raw JSON — try base64-decoding it before parsing again
+    try {
+      return JSON.parse(Buffer.from(trimmed, 'base64').toString('utf8'));
+    } catch (__) {
+      throw new Error('FIREBASE_SERVICE_ACCOUNT is neither valid JSON nor valid base64-encoded JSON');
+    }
+  }
+}
+
 function initFirebase() {
   if (firebaseApp || admin.apps.length > 0) {
     firebaseApp = admin.apps[0];
@@ -16,10 +37,9 @@ function initFirebase() {
   try {
     let serviceAccount = null;
 
-    // 1. Base64-encoded service-account JSON (recommended for Render)
+    // 1. FIREBASE_SERVICE_ACCOUNT env var — raw JSON OR base64 JSON (recommended for Render)
     if (process.env.FIREBASE_SERVICE_ACCOUNT) {
-      const json = Buffer.from(process.env.FIREBASE_SERVICE_ACCOUNT, 'base64').toString('utf8');
-      serviceAccount = JSON.parse(json);
+      serviceAccount = parseServiceAccount(process.env.FIREBASE_SERVICE_ACCOUNT);
     }
     // 2. Path to a JSON file via GOOGLE_APPLICATION_CREDENTIALS
     else if (process.env.GOOGLE_APPLICATION_CREDENTIALS) {
@@ -37,7 +57,7 @@ function initFirebase() {
 
     if (!serviceAccount) {
       throw new Error(
-        'Firebase service account not found. Set FIREBASE_SERVICE_ACCOUNT (base64 JSON) ' +
+        'Firebase service account not found. Set FIREBASE_SERVICE_ACCOUNT (raw JSON or base64 JSON) ' +
         'in your env, or add firebase-service-account.json to the project root.'
       );
     }
