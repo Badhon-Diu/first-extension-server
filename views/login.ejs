@@ -388,6 +388,9 @@
   let mode = 'login'; // 'login' | 'signup'
   let hasSentToken = false; // prevent duplicate postMessage calls
 
+  // Where to send the browser after a standalone login (defaults to the admin dashboard)
+  const next = (new URLSearchParams(location.search).get('next') || '/admin');
+
   // ── Tabs ────────────────────────────────────────────────────────────────────
   function setMode(m) {
     mode = m;
@@ -429,12 +432,25 @@
       return;
     }
 
-    // Standalone mode — show token copy field
-    tokenArea.value = token;
-    tokenBox.classList.add('show');
-    hint.classList.add('show');
-    const name = user.displayName || user.email || 'there';
-    showMsg('Signed in as ' + name + '. Copy your token below.', 'success');
+    // Standalone mode — start a browser session (cookie) and go to the next page
+    submitBtn.disabled = true;
+    showMsg('Signed in as ' + (user.displayName || user.email) + '. Redirecting…', 'success');
+    try {
+      const resp = await fetch('/api/auth/session', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, next }),
+      });
+      if (!resp.ok) throw new Error('Session failed');
+      location.href = next;
+    } catch (err) {
+      // Fallback — show the token for manual copying
+      submitBtn.disabled = false;
+      tokenArea.value = token;
+      tokenBox.classList.add('show');
+      hint.classList.add('show');
+      showMsg('Signed in as ' + (user.displayName || user.email) + '. Copy your token below.', 'success');
+    }
   }
 
   function onAuthError(err) {

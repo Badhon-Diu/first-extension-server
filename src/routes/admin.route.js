@@ -33,7 +33,7 @@ function mapUser(u) {
 
 // ── HTML admin dashboard ────────────────────────────────────────────────────
 // GET /admin
-router.get('/', requireAuth, requireAdmin, async (req, res) => {
+router.get('/admin', requireAuth, requireAdmin, async (req, res) => {
   if (!isFirebaseReady()) {
     return res.status(500).send('Firebase not configured: ' + (getFirebaseError() || ''));
   }
@@ -54,7 +54,7 @@ router.get('/', requireAuth, requireAdmin, async (req, res) => {
 
 // ── JSON API ────────────────────────────────────────────────────────────────
 // GET /api/admin/users
-router.get('/users', requireAuth, requireAdmin, async (_req, res) => {
+router.get('/api/admin/users', requireAuth, requireAdmin, async (_req, res) => {
   try {
     const list = await admin.auth().listUsers(MAX_USERS);
     res.json({ count: list.users.length, users: list.users.map(mapUser) });
@@ -64,7 +64,7 @@ router.get('/users', requireAuth, requireAdmin, async (_req, res) => {
 });
 
 // DELETE /api/admin/users/:uid
-router.delete('/users/:uid', requireAuth, requireAdmin, async (req, res) => {
+router.delete('/api/admin/users/:uid', requireAuth, requireAdmin, async (req, res) => {
   const { uid } = req.params;
   if (!uid || !/^[a-zA-Z0-9_-]{4,128}$/.test(uid)) {
     return res.status(400).json({ error: 'Invalid user ID' });

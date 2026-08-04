@@ -56,8 +56,8 @@ app.get('/api/network-info', (_req, res) => {
 });
 
 // Auth & admin
-app.use('/', authRouter);      // GET /login  |  GET/POST /api/auth/*
-app.use('/admin', adminRouter); // GET /admin  |  GET /api/admin/users  |  DELETE /api/admin/users/:uid
+app.use('/', authRouter);      // GET /login  |  GET /logout  |  GET/POST /api/auth/*
+app.use('/', adminRouter);     // GET /admin  |  GET /api/admin/users  |  DELETE /api/admin/users/:uid
 
 // Protected extension APIs — require "Authorization: Bearer <firebase-token>"
 app.use('/api/analyze-audio',  requireAuth, audioRouter);

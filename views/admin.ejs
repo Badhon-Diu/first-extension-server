@@ -523,8 +523,8 @@
   // ── Logout ──────────────────────────────────────────────────────────────────
   logoutBtn.addEventListener('click', async () => {
     try { await fetch('/api/auth/revoke', { method: 'POST' }); } catch (e) {}
-    // No server session is kept — the Firebase token simply expires.
-    showToast('You can now close this tab. Your token will expire on its own.', 'success');
+    // Clear the browser session cookie and return to the login page
+    location.href = '/logout';
   });
 
   // ── Events ──────────────────────────────────────────────────────────────────

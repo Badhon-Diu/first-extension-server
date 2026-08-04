@@ -33,3 +33,6 @@ Thumbs.db
 .vercel/
 
 .vercel
+
+firebase-service-account.json
+firebase-service-account-base64.txt
